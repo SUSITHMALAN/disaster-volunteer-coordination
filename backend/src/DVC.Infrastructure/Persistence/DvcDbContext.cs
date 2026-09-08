@@ -11,12 +11,14 @@ namespace DVC.Infrastructure.Persistence
         }
 
         public DbSet<Incident> Incidents => Set<Incident>();
+
         public DbSet<User> Users => Set<User>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // Incident configuration
             modelBuilder.Entity<Incident>(entity =>
             {
                 entity.HasKey(i => i.Id);
@@ -44,10 +46,15 @@ namespace DVC.Infrastructure.Persistence
                     .HasColumnType("text[]");
             });
 
+            // User configuration
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(u => u.Id);
-                entity.HasIndex(u => u.Email).IsUnique();
+
+                entity.ToTable("Users");
+
+                entity.HasIndex(u => u.Email)
+                    .IsUnique();
 
                 entity.Property(u => u.Email)
                     .IsRequired()
