@@ -1,5 +1,5 @@
+using DVC.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 
 namespace DVC.Infrastructure.Persistence
 {
@@ -9,18 +9,61 @@ namespace DVC.Infrastructure.Persistence
             : base(options)
         {
         }
-    }
 
-    public class DvcDbContextFactory : IDesignTimeDbContextFactory<DvcDbContext>
-    {
-        public DvcDbContext CreateDbContext(string[] args)
+        public DbSet<Incident> Incidents => Set<Incident>();
+        public DbSet<User> Users => Set<User>();
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            var optionsBuilder = new DbContextOptionsBuilder<DvcDbContext>();
+            base.OnModelCreating(modelBuilder);
 
-            optionsBuilder.UseNpgsql(
-                "Host=localhost;Port=5432;Database=dvc_dev;Username=postgres;Password=1234");
+            modelBuilder.Entity<Incident>(entity =>
+            {
+                entity.HasKey(i => i.Id);
 
-            return new DvcDbContext(optionsBuilder.Options);
+                entity.Property(i => i.Title)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(i => i.Description)
+                    .HasMaxLength(2000);
+
+                entity.Property(i => i.Category)
+                    .HasConversion<string>()
+                    .HasMaxLength(50);
+
+                entity.Property(i => i.Severity)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+
+                entity.Property(i => i.Status)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+
+                entity.Property(i => i.RequiredSkills)
+                    .HasColumnType("text[]");
+            });
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(u => u.Id);
+                entity.HasIndex(u => u.Email).IsUnique();
+
+                entity.Property(u => u.Email)
+                    .IsRequired()
+                    .HasMaxLength(256);
+
+                entity.Property(u => u.FullName)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(u => u.Role)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+
+                entity.Property(u => u.Skills)
+                    .HasColumnType("text[]");
+            });
         }
     }
 }
