@@ -14,6 +14,8 @@ namespace DVC.Infrastructure.Persistence
 
         public DbSet<User> Users => Set<User>();
 
+        public DbSet<VolunteerMatch> VolunteerMatches => Set<VolunteerMatch>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -70,6 +72,26 @@ namespace DVC.Infrastructure.Persistence
 
                 entity.Property(u => u.Skills)
                     .HasColumnType("text[]");
+            });
+
+            // Volunteer match configuration
+            modelBuilder.Entity<VolunteerMatch>(entity =>
+            {
+                entity.HasKey(m => m.Id);
+
+                entity.Property(m => m.Status)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+
+                entity.HasOne(m => m.Incident)
+                    .WithMany()
+                    .HasForeignKey(m => m.IncidentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(m => m.Volunteer)
+                    .WithMany()
+                    .HasForeignKey(m => m.VolunteerId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

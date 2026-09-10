@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using DVC.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DVC.Infrastructure.Migrations
 {
     [DbContext(typeof(DvcDbContext))]
-    partial class DvcDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260910043158_AddVolunteerMatch")]
+    partial class AddVolunteerMatch
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
