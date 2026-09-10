@@ -7,18 +7,17 @@ def test_graph_pauses_for_approval():
     config = {"configurable": {"thread_id": "test-1"}}
 
     initial_state = {
-        "incident_id": "INC-001",
+        "incident_id": "6bf94b77-2ede-4cc3-9e52-3e549667bcea",
         "raw_report_text": "Flooded street near river, need sandbags.",
+        "required_skills": ["first-aid"],
         "status": "pending_triage",
     }
 
-    # Run until it hits the interrupt (human approval pause)
     result = app.invoke(initial_state, config=config)
 
     assert "__interrupt__" in result
     print("Graph paused for approval as expected:", result["__interrupt__"])
 
-    # Simulate human approving — resume the SAME run with Command
     final_result = app.invoke(
         Command(resume={"decision": "approve", "feedback": "Looks good."}),
         config=config,
