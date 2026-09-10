@@ -1,9 +1,10 @@
 import VolunteerList from "../components/VolunteerList";
+import "./VolunteersPage.css";
 
 export default function VolunteersPage() {
   return (
-    <div style={{ background: "#F7F8FA", minHeight: "100vh", paddingTop: "40px" }}>
+    <main className="volunteers-page">
       <VolunteerList />
-    </div>
+    </main>
   );
 }

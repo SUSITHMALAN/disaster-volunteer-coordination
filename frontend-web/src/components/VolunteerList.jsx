@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getVolunteers, updateAvailability } from "../api/volunteers";
 import VolunteerCard from "./VolunteerCard";
+import "./VolunteerList.css";
 
 export default function VolunteerList() {
   const [volunteers, setVolunteers] = useState([]);
@@ -34,36 +35,31 @@ export default function VolunteerList() {
   }
 
   return (
-    <div style={{ maxWidth: "640px", margin: "0 auto", fontFamily: "system-ui, sans-serif" }}>
-      <div style={{ padding: "20px 20px 12px" }}>
-        <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#1B2430", margin: 0 }}>
-          Volunteers
-        </h1>
-        <input
-          type="text"
-          placeholder="Filter by skill (e.g. first-aid)"
-          value={skillFilter}
-          onChange={(e) => setSkillFilter(e.target.value)}
-          style={{
-            marginTop: "12px",
-            width: "100%",
-            padding: "8px 12px",
-            border: "1px solid #D6D9DE",
-            borderRadius: "6px",
-            fontSize: "14px",
-          }}
-        />
+    <div className="volunteer-list">
+      <div className="volunteer-list__header">
+        <h1 className="volunteer-list__title">Volunteers</h1>
+        <p className="volunteer-list__subtitle">
+          {volunteers.length} registered
+        </p>
       </div>
 
-      {loading && <p style={{ padding: "0 20px", color: "#5B6472" }}>Loading volunteers…</p>}
-      {error && <p style={{ padding: "0 20px", color: "#B3413E" }}>{error}</p>}
+      <input
+        type="text"
+        className="volunteer-list__filter"
+        placeholder="Filter by skill — e.g. first-aid"
+        value={skillFilter}
+        onChange={(e) => setSkillFilter(e.target.value)}
+      />
+
+      {loading && <p className="volunteer-list__status">Loading volunteers…</p>}
+      {error && <p className="volunteer-list__status volunteer-list__status--error">{error}</p>}
       {!loading && !error && volunteers.length === 0 && (
-        <p style={{ padding: "0 20px", color: "#5B6472" }}>
-          No volunteers match this filter yet.
+        <p className="volunteer-list__status">
+          No volunteers match this filter. Try a different skill.
         </p>
       )}
 
-      <div style={{ border: "1px solid #E2E5E9", borderTop: "none" }}>
+      <div className="volunteer-list__rows">
         {volunteers.map((v) => (
           <VolunteerCard key={v.id} volunteer={v} onToggleAvailability={handleToggle} />
         ))}
