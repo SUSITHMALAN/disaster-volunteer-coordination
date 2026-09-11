@@ -35,4 +35,9 @@ namespace DVC.Application.Dtos
         public string? Rationale { get; set; }
         public string Status { get; set; } = string.Empty;
     }
+    public class UpdateProfileRequest
+    {
+        public List<string> Skills { get; set; } = new();
+        public bool IsAvailable { get; set; }
+    }
 }

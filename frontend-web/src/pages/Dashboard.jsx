@@ -7,6 +7,7 @@ const ROLE_LINKS = {
   Coordinator: [
     { label: "Incidents", to: "/incidents" },
     { label: "Volunteers", to: "/volunteers" },
+    { label: "Matches", to: "/matches" },
     { label: "Approval queue", to: "/approvals" },
   ],
   Admin: [

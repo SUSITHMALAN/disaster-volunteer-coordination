@@ -18,3 +18,13 @@ export function updateAvailability(volunteerId, isAvailable) {
 export function getMatches(incidentId) {
   return apiFetch(`/api/Matches?incidentId=${incidentId}`);
 }
+export function getVolunteerProfile(id) {
+  return apiFetch(`/api/Volunteers/${id}`);
+}
+
+export function updateVolunteerProfile(id, { skills, isAvailable }) {
+  return apiFetch(`/api/Volunteers/${id}/profile`, {
+    method: "PATCH",
+    body: JSON.stringify({ skills, isAvailable }),
+  });
+}

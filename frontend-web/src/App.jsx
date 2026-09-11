@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import VolunteersPage from "./pages/VolunteersPage";
+import MatchesPage from "./pages/MatchesPage.jsx";
 import "./App.css";
 
 function ProtectedRoute({ children }) {
@@ -26,6 +27,14 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+	<Route
+  	path="/matches"
+  	element={
+    		<ProtectedRoute>
+      <MatchesPage />
+    </ProtectedRoute>
+  }
+/>
       <Route
         path="/volunteers"
         element={
