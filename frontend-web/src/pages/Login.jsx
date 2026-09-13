@@ -28,7 +28,8 @@ export default function Login() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
-        <h1 className="auth-form__title">Sign in</h1>
+        <h1 className="auth-form__title">Welcome back</h1>
+        <p className="auth-form__subtitle">Sign in to your volunteer dashboard</p>
 
         <label className="auth-form__label">
           Email
@@ -36,6 +37,7 @@ export default function Login() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
             required
           />
         </label>
@@ -46,6 +48,7 @@ export default function Login() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
             required
           />
         </label>
@@ -57,7 +60,7 @@ export default function Login() {
         </button>
 
         <p className="auth-form__switch">
-          No account? <Link to="/register">Register</Link>
+          No account? <Link to="/register">Create one</Link>
         </p>
       </form>
     </div>

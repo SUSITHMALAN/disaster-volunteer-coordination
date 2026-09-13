@@ -1,25 +1,53 @@
+/* ── App Shell ── */
 .app-shell {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
+/* ── Header ── */
 .app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   background: var(--color-header);
-  color: var(--color-header-text);
-  padding: 16px 32px;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 0 32px;
+  height: 64px;
   display: flex;
-  align-items: baseline;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
+  animation: slideDown 0.5s var(--ease-out);
 }
 
 .app-header__mark {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 18px;
-  color: var(--color-accent);
-  letter-spacing: 0.02em;
+  font-size: 20px;
+  background: var(--gradient-hero);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.04em;
 }
 
 .app-header__title {
   font-size: 14px;
-  color: #B4BAC4;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  letter-spacing: 0.01em;
+}
+
+/* Glowing line under header */
+.app-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--gradient-hero);
+  opacity: 0.4;
 }

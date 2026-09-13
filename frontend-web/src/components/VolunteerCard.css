@@ -1,16 +1,32 @@
+/* ── Volunteer Card ── */
 .v-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 4px 16px 16px;
+  padding: 18px 20px;
   border-bottom: 1px solid var(--color-border);
   border-left: 3px solid transparent;
-  background: var(--color-surface);
-  transition: border-left-color 0.15s ease;
+  background: transparent;
+  transition: all 0.25s var(--ease-out);
+}
+
+.v-card:last-child {
+  border-bottom: none;
+}
+
+.v-card:hover {
+  background: var(--color-surface-hover);
 }
 
 .v-card--available {
-  border-left-color: var(--color-available);
+  border-left-color: var(--color-success);
+}
+
+/* ── Name & Info ── */
+.v-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .v-card__name {
@@ -22,23 +38,58 @@
 .v-card__skills {
   font-size: 13px;
   color: var(--color-text-muted);
-  margin-top: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
+.v-card__skill-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  background: var(--color-info-soft);
+  color: var(--color-info);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.v-card__no-skills {
+  font-style: italic;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+/* ── Toggle Button ── */
 .v-card__toggle {
-  padding: 7px 16px;
-  border-radius: 20px;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
   border: none;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   color: #FFFFFF;
+  transition: all 0.25s var(--ease-out);
+  white-space: nowrap;
 }
 
 .v-card__toggle--available {
-  background: var(--color-available);
+  background: var(--color-success);
+  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.3);
+}
+
+.v-card__toggle--available:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
 }
 
 .v-card__toggle--unavailable {
   background: var(--color-unavailable);
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.2);
+}
+
+.v-card__toggle--unavailable:hover {
+  background: #475569;
+  transform: translateY(-1px);
 }

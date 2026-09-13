@@ -1,51 +1,166 @@
+/* ── Dashboard Layout ── */
 .dashboard {
-  padding: 40px 32px;
-  max-width: 480px;
+  padding: 48px 40px 80px;
+  max-width: 900px;
+  margin: 0 auto;
+  animation: fadeInUp 0.5s var(--ease-out) both;
+}
+
+/* ── Welcome Section ── */
+.dashboard__welcome {
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.dashboard__greeting {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin: 0 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
 }
 
 .dashboard__title {
   font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 36px;
+  font-weight: 700;
   margin: 0;
-  color: var(--color-text);
+  background: var(--gradient-hero);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
 }
 
 .dashboard__role {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 6px 14px;
+  background: var(--color-primary-glow);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary-hover);
+  letter-spacing: 0.02em;
+}
+
+.dashboard__role-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ── Quick Action Cards ── */
+.dashboard__section-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   color: var(--color-text-muted);
-  font-size: 14px;
-  margin: 4px 0 32px;
+  font-weight: 600;
+  margin: 0 0 16px;
 }
 
 .dashboard__links {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 32px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
 }
 
 .dashboard__link {
-  display: block;
-  padding: 14px 16px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 22px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
   color: var(--color-text);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   text-decoration: none;
+  transition: all 0.3s var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard__link::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-surface);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .dashboard__link:hover {
-  border-color: var(--color-accent);
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md), 0 0 24px var(--color-primary-glow);
+  color: var(--color-text);
 }
 
+.dashboard__link:hover::before {
+  opacity: 1;
+}
+
+.dashboard__link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  font-size: 20px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard__link-icon--incidents {
+  background: var(--color-danger-soft);
+}
+
+.dashboard__link-icon--volunteers {
+  background: var(--color-success-soft);
+}
+
+.dashboard__link-icon--approvals {
+  background: var(--color-warning-soft);
+}
+
+.dashboard__link-icon--profile {
+  background: var(--color-info-soft);
+}
+
+.dashboard__link-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Logout ── */
 .dashboard__logout {
-  padding: 8px 16px;
+  padding: 10px 24px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: var(--radius-full);
   background: transparent;
   color: var(--color-text-muted);
   font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.25s var(--ease-out);
+}
+
+.dashboard__logout:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
 }

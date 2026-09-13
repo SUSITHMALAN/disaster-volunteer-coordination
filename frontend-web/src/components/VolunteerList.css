@@ -1,53 +1,91 @@
+/* ── Volunteer List Container ── */
 .volunteer-list {
-  max-width: 640px;
+  max-width: 100%;
 }
 
+/* ── Header ── */
 .volunteer-list__header {
   display: flex;
   align-items: baseline;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
 .volunteer-list__title {
   font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 600;
+  font-size: 32px;
+  font-weight: 700;
   margin: 0;
-  color: var(--color-text);
+  background: var(--gradient-hero);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .volunteer-list__subtitle {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-text-muted);
   margin: 0;
+  padding: 4px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
 }
 
+/* ── Filter Input ── */
 .volunteer-list__filter {
   width: 100%;
-  padding: 10px 14px;
+  padding: 14px 18px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   font-size: 14px;
+  font-family: inherit;
   color: var(--color-text);
   margin-bottom: 24px;
+  transition: all 0.25s var(--ease-out);
 }
 
 .volunteer-list__filter::placeholder {
-  color: #A2A8B1;
+  color: var(--color-text-muted);
 }
 
+.volunteer-list__filter:hover {
+  border-color: var(--color-border-hover);
+}
+
+.volunteer-list__filter:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Status Messages ── */
 .volunteer-list__status {
   color: var(--color-text-muted);
   font-size: 14px;
-  padding: 8px 0;
+  padding: 24px 0;
+  text-align: center;
 }
 
 .volunteer-list__status--error {
-  color: var(--color-error);
+  color: var(--color-danger);
+  padding: 14px 18px;
+  background: var(--color-danger-soft);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-md);
 }
 
+/* ── Rows Container ── */
 .volunteer-list__rows {
-  border-top: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
 }

@@ -1,83 +1,245 @@
+/* ── Auth Page Layout ── */
 .auth-page {
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - 64px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 40px 20px;
+  position: relative;
 }
 
+/* Decorative orbs behind form */
+.auth-page::before,
+.auth-page::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-page::before {
+  width: 400px;
+  height: 400px;
+  top: 10%;
+  left: 10%;
+  background: rgba(99, 102, 241, 0.15);
+  animation: floatOrb 8s ease-in-out infinite alternate;
+}
+
+.auth-page::after {
+  width: 300px;
+  height: 300px;
+  bottom: 10%;
+  right: 15%;
+  background: rgba(236, 72, 153, 0.12);
+  animation: floatOrb 10s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes floatOrb {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(30px, -20px) scale(1.1); }
+}
+
+/* ── Glass Form Card ── */
 .auth-form {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 360px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 32px;
+  max-width: 420px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 40px 36px;
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  animation: fadeInUp 0.6s var(--ease-out) both;
 }
 
+/* Gradient top border accent */
+.auth-form::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 3px;
+  background: var(--gradient-hero);
+  border-radius: 0 0 3px 3px;
+}
+
+/* ── Title ── */
 .auth-form__title {
   font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 600;
-  margin: 0 0 24px;
-  color: var(--color-text);
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  background: var(--gradient-hero);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
+/* ── Subtitle ── */
+.auth-form__subtitle {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin: 0 0 28px;
+}
+
+/* ── Labels & Inputs ── */
 .auth-form__label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
-  color: var(--color-text-muted);
-  margin-bottom: 16px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 20px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .auth-form__label input,
 .auth-form__label select {
-  padding: 9px 12px;
+  padding: 12px 16px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: var(--radius-md);
+  font-size: 15px;
   color: var(--color-text);
   font-family: inherit;
+  background: rgba(255, 255, 255, 0.04);
+  transition: all 0.25s var(--ease-out);
+  text-transform: none;
 }
 
+.auth-form__label input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.auth-form__label input:hover,
+.auth-form__label select:hover {
+  border-color: var(--color-border-hover);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.auth-form__label input:focus,
+.auth-form__label select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.auth-form__label select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%2394A3B8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.auth-form__label select option {
+  background: var(--color-surface-solid);
+  color: var(--color-text);
+}
+
+/* ── Error ── */
 .auth-form__error {
-  color: var(--color-error);
+  color: var(--color-danger);
   font-size: 13px;
+  font-weight: 500;
   margin: 0 0 16px;
+  padding: 10px 14px;
+  background: var(--color-danger-soft);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-sm);
+  animation: fadeIn 0.3s var(--ease-out);
 }
 
+/* ── Submit Button ── */
 .auth-form__submit {
   width: 100%;
-  padding: 10px;
+  padding: 14px;
   border: none;
-  border-radius: 6px;
-  background: var(--color-accent);
+  border-radius: var(--radius-md);
+  background: var(--gradient-hero);
   color: #FFFFFF;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.3s var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-form__submit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .auth-form__submit:hover {
-  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+}
+
+.auth-form__submit:hover::before {
+  opacity: 1;
+}
+
+.auth-form__submit:active {
+  transform: translateY(0);
 }
 
 .auth-form__submit:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
+/* ── Switch Link ── */
 .auth-form__switch {
-  margin: 16px 0 0;
-  font-size: 13px;
+  margin: 20px 0 0;
+  font-size: 14px;
   color: var(--color-text-muted);
   text-align: center;
 }
 
 .auth-form__switch a {
-  color: var(--color-accent);
+  color: var(--color-primary-hover);
   font-weight: 600;
   text-decoration: none;
+  transition: color 0.2s;
+}
+
+.auth-form__switch a:hover {
+  color: var(--color-accent);
+}
+
+/* ── Divider (optional) ── */
+.auth-form__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.auth-form__divider::before,
+.auth-form__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
 }
