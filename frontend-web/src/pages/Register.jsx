@@ -32,7 +32,8 @@ export default function Register() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
-        <h1 className="auth-form__title">Create an account</h1>
+        <h1 className="auth-form__title">Join the mission</h1>
+        <p className="auth-form__subtitle">Create your account to start coordinating</p>
 
         <label className="auth-form__label">
           Full name
@@ -40,6 +41,7 @@ export default function Register() {
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
+            placeholder="Jane Doe"
             required
           />
         </label>
@@ -50,6 +52,7 @@ export default function Register() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
             required
           />
         </label>
@@ -60,6 +63,7 @@ export default function Register() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="Min. 8 characters"
             required
             minLength={8}
           />

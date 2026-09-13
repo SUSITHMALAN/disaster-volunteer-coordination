@@ -1,38 +1,28 @@
+import "./VolunteerCard.css";
+
 export default function VolunteerCard({ volunteer, onToggleAvailability }) {
+  const isAvailable = volunteer.isAvailable;
+
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "16px 20px",
-        borderBottom: "1px solid #E2E5E9",
-        background: "#FFFFFF",
-      }}
-    >
-      <div>
-        <div style={{ fontWeight: 600, color: "#1B2430", fontSize: "15px" }}>
-          {volunteer.fullName}
-        </div>
-        <div style={{ color: "#5B6472", fontSize: "13px", marginTop: "2px" }}>
-          {volunteer.skills.length > 0 ? volunteer.skills.join(", ") : "No skills listed"}
+    <div className={`v-card${isAvailable ? " v-card--available" : ""}`}>
+      <div className="v-card__info">
+        <div className="v-card__name">{volunteer.fullName}</div>
+        <div className="v-card__skills">
+          {volunteer.skills.length > 0 ? (
+            volunteer.skills.map((skill) => (
+              <span key={skill} className="v-card__skill-tag">{skill}</span>
+            ))
+          ) : (
+            <span className="v-card__no-skills">No skills listed</span>
+          )}
         </div>
       </div>
 
       <button
-        onClick={() => onToggleAvailability(volunteer.id, !volunteer.isAvailable)}
-        style={{
-          padding: "6px 14px",
-          borderRadius: "6px",
-          border: "none",
-          fontSize: "13px",
-          fontWeight: 600,
-          cursor: "pointer",
-          background: volunteer.isAvailable ? "#2F6B4F" : "#8A8F98",
-          color: "#FFFFFF",
-        }}
+        className={`v-card__toggle ${isAvailable ? "v-card__toggle--available" : "v-card__toggle--unavailable"}`}
+        onClick={() => onToggleAvailability(volunteer.id, !isAvailable)}
       >
-        {volunteer.isAvailable ? "Available" : "Unavailable"}
+        {isAvailable ? "✓ Available" : "Unavailable"}
       </button>
     </div>
   );
