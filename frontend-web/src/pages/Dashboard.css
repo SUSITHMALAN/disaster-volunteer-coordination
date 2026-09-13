@@ -13,12 +13,12 @@
 }
 
 .dashboard__greeting {
-  font-size: 14px;
-  color: var(--color-text-muted);
-  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--color-primary-hover);
+  margin: 0 0 6px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 500;
+  letter-spacing: 0.1em;
+  font-weight: 700;
 }
 
 .dashboard__title {
@@ -36,11 +36,11 @@
 .dashboard__role {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 12px;
+  gap: 8px;
+  margin-top: 14px;
   padding: 6px 14px;
-  background: var(--color-primary-glow);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(249, 115, 22, 0.12);
+  border: 1px solid rgba(249, 115, 22, 0.3);
   border-radius: var(--radius-full);
   font-size: 13px;
   font-weight: 600;
@@ -53,6 +53,7 @@
   height: 8px;
   border-radius: 50%;
   background: var(--color-primary);
+  box-shadow: 0 0 8px var(--color-primary);
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -61,7 +62,7 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-weight: 600;
   margin: 0 0 16px;
 }
@@ -103,7 +104,7 @@
 
 .dashboard__link:hover {
   border-color: var(--color-primary);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-md), 0 0 24px var(--color-primary-glow);
   color: var(--color-text);
 }
@@ -116,8 +117,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: var(--radius-md);
   font-size: 20px;
   flex-shrink: 0;
@@ -127,18 +128,22 @@
 
 .dashboard__link-icon--incidents {
   background: var(--color-danger-soft);
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .dashboard__link-icon--volunteers {
   background: var(--color-success-soft);
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .dashboard__link-icon--approvals {
   background: var(--color-warning-soft);
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .dashboard__link-icon--profile {
   background: var(--color-info-soft);
+  border: 1px solid rgba(14, 165, 233, 0.3);
 }
 
 .dashboard__link-text {
