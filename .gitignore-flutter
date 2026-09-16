@@ -1,0 +1,1 @@
+Add-Content .gitignore "`n# Flutter (additional)`n.pub-cache/`n.pub/`n/android/app/debug`n/android/app/profile`n/android/app/release"
