@@ -5,6 +5,8 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import VolunteersPage from "./pages/VolunteersPage";
 import MatchesPage from "./pages/MatchesPage.jsx";
+import IncidentsPage from "./pages/IncidentsPage";
+import ReportIncidentPage from "./pages/ReportIncidentPage";
 import "./App.css";
 
 function ProtectedRoute({ children }) {
@@ -40,6 +42,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <VolunteersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/incidents"
+        element={
+          <ProtectedRoute>
+            <IncidentsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/incidents/new"
+        element={
+          <ProtectedRoute>
+            <ReportIncidentPage />
           </ProtectedRoute>
         }
       />
