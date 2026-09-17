@@ -4,16 +4,17 @@ from langgraph.checkpoint.memory import MemorySaver
 
 from .state import AgentState
 from agents.matching_agent import run_matching
+from agents.triage_agent import run_triage
 
 
 def triage_node(state: AgentState) -> dict:
     """Student 1: Triage/Intake Agent."""
+    result = run_triage(
+        raw_report_text=state.get("raw_report_text") or "",
+        existing_required_skills=state.get("required_skills"),
+    )
     return {
-        "category": "Other",
-        "severity": "Medium",
-        "required_skills": state.get("required_skills") or [],
-        "zone": "Unknown",
-        "triage_confidence": 1.0,
+        **result,
         "status": "pending_matching",
     }
 
