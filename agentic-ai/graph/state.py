@@ -16,14 +16,19 @@ class AgentState(TypedDict, total=False):
     # --- Matching Agent output ---
     candidate_volunteers: Optional[list[dict]]
     matched_volunteer_ids: Optional[list[str]]
+    match_scores: Optional[dict[str, float]]
 
     # --- Safety/Validation Agent output ---
     validation_passed: Optional[bool]
     validation_notes: Optional[str]
+    validation_is_stub: Optional[bool]
+    validated_volunteer_ids: Optional[list[str]]
 
     # --- Coordinator/Dispatch Agent output ---
     dispatch_plan: Optional[dict]
     dispatch_summary: Optional[str]
+    # Optional Resource API snapshots for this incident; no fetches in the agent.
+    incident_resources: Optional[list[dict]]
 
     # --- Human-in-the-loop control ---
     status: Literal[

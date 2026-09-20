@@ -5,6 +5,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from .state import AgentState
 from agents.matching_agent import run_matching
 from agents.triage_agent import run_triage
+from agents.coordinator_agent import run_coordinator
 
 
 def triage_node(state: AgentState) -> dict:
@@ -37,18 +38,18 @@ def validation_node(state: AgentState) -> dict:
     return {
         "validation_passed": True,
         "validation_notes": "Stub: no rules evaluated yet.",
-        "status": "pending_approval",
+        "validation_is_stub": True,
+        "status": "pending_validation",
     }
 
 
 def coordinator_node(state: AgentState) -> dict:
     """Student 4: Coordinator/Dispatch Agent."""
-    dispatch_plan = {
-        "incident_id": state.get("incident_id"),
-        "assigned_volunteers": state.get("matched_volunteer_ids", []),
-    }
-    summary = f"Proposed dispatch for incident {state.get('incident_id')}: " \
-              f"{len(state.get('matched_volunteer_ids', []))} volunteer(s) assigned."
+    dispatch_plan = run_coordinator(state)
+    summary = dispatch_plan["summary"]
+    if not dispatch_plan["assignments"]:
+        return {"dispatch_plan": dispatch_plan, "dispatch_summary": summary,
+                "human_decision": None, "status": "rejected"}
 
     decision = interrupt({
         "dispatch_plan": dispatch_plan,
@@ -66,7 +67,9 @@ def coordinator_node(state: AgentState) -> dict:
 
 
 def route_after_validation(state: AgentState) -> str:
-    return "coordinator" if state.get("validation_passed") else END
+    return "coordinator" if (
+        state.get("validation_passed") is True and not state.get("validation_is_stub")
+    ) else END
 
 
 def build_graph():
