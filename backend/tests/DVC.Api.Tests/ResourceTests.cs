@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 using DVC.Api.Controllers;
 using DVC.Application.Dtos;
 using DVC.Domain.Entities;
@@ -8,6 +9,32 @@ namespace DVC.Api.Tests;
 
 public class ResourceTests
 {
+    [Theory]
+    [InlineData("availableQuantity")]
+    [InlineData("neededQuantity")]
+    [InlineData("usedQuantity")]
+    public void JsonRequestsRejectOmittedQuantities(string missingProperty)
+    {
+        var payload = new Dictionary<string, object>
+        {
+            ["incidentId"] = Guid.NewGuid(),
+            ["resourceName"] = "Water",
+            ["unit"] = "litres",
+            ["availableQuantity"] = 0m,
+            ["neededQuantity"] = 0m,
+            ["usedQuantity"] = 0m
+        };
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        var completeJson = JsonSerializer.Serialize(payload);
+        Assert.NotNull(JsonSerializer.Deserialize<CreateResourceRequest>(completeJson, options));
+        Assert.NotNull(JsonSerializer.Deserialize<UpdateResourceRequest>(completeJson, options));
+
+        payload.Remove(missingProperty);
+        var incompleteJson = JsonSerializer.Serialize(payload);
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<CreateResourceRequest>(incompleteJson, options));
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<UpdateResourceRequest>(incompleteJson, options));
+    }
+
     [Theory]
     [InlineData(10, 15, true, 5)]
     [InlineData(10, 10, false, 0)]

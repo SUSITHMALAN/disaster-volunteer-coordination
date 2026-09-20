@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using DVC.Domain.Entities;
 
 namespace DVC.Application.Dtos
@@ -14,8 +15,12 @@ namespace DVC.Application.Dtos
         [Required, StringLength(50)]
         public string Unit { get; set; } = string.Empty;
 
+        // Missing values must not silently reset quantities to zero on PUT.
+        [JsonRequired]
         public decimal AvailableQuantity { get; set; }
+        [JsonRequired]
         public decimal NeededQuantity { get; set; }
+        [JsonRequired]
         public decimal UsedQuantity { get; set; }
 
         public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
