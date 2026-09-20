@@ -27,6 +27,8 @@ class AgentState(TypedDict, total=False):
     # --- Coordinator/Dispatch Agent output ---
     dispatch_plan: Optional[dict]
     dispatch_summary: Optional[str]
+    dispatch_approval: Optional[dict]
+    dispatch_result: Optional[dict]
     # Optional Resource API snapshots for this incident; no fetches in the agent.
     incident_resources: Optional[list[dict]]
 
@@ -39,6 +41,9 @@ class AgentState(TypedDict, total=False):
         "approved",
         "rejected",
         "dispatched",
+        "dispatch_blocked",
+        "dispatch_failed",
+        "dispatch_unknown",
     ]
     human_decision: Optional[Literal["approve", "reject", "revise"]]
     human_feedback: Optional[str]
