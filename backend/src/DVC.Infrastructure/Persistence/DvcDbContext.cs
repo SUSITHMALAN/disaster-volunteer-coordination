@@ -16,6 +16,8 @@ namespace DVC.Infrastructure.Persistence
 
         public DbSet<VolunteerMatch> VolunteerMatches => Set<VolunteerMatch>();
 
+        public DbSet<Assignment> Assignments => Set<Assignment>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -72,6 +74,22 @@ namespace DVC.Infrastructure.Persistence
 
                 entity.Property(u => u.Skills)
                     .HasColumnType("text[]");
+
+                entity.Property(u => u.Certifications)
+                    .HasColumnType("text[]");
+
+                entity.Property(u => u.ComfortTier)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+
+                entity.Property(u => u.MaximumActiveAssignments)
+                    .IsRequired();
+
+                entity.Property(u => u.AvailabilityStartUtc)
+                    .IsRequired(false);
+
+                entity.Property(u => u.AvailabilityEndUtc)
+                    .IsRequired(false);
             });
 
             // Volunteer match configuration
@@ -91,6 +109,40 @@ namespace DVC.Infrastructure.Persistence
                 entity.HasOne(m => m.Volunteer)
                     .WithMany()
                     .HasForeignKey(m => m.VolunteerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Assignment configuration
+            modelBuilder.Entity<Assignment>(entity =>
+            {
+                entity.HasKey(a => a.Id);
+
+                entity.Property(a => a.Status)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+
+                entity.Property(a => a.EstimatedDurationMinutes)
+                    .IsRequired();
+
+                entity.Property(a => a.AssignedAtUtc)
+                    .IsRequired();
+
+                entity.Property(a => a.CreatedAtUtc)
+                    .IsRequired();
+
+                entity.HasOne(a => a.Incident)
+                    .WithMany()
+                    .HasForeignKey(a => a.IncidentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(a => a.Volunteer)
+                    .WithMany()
+                    .HasForeignKey(a => a.VolunteerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(a => a.Match)
+                    .WithMany()
+                    .HasForeignKey(a => a.MatchId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
         }
