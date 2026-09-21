@@ -61,6 +61,7 @@ builder.Services.AddDbContext<DvcDbContext>(options =>
 
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IIncidentService, IncidentService>();
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"]!;
