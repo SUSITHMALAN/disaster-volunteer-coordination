@@ -33,12 +33,16 @@ namespace DVC.Infrastructure.Services
                 throw new KeyNotFoundException("Volunteer match not found.");
 
             if (match.Incident is null)
+            {
                 throw new InvalidOperationException(
                     "The matched incident could not be found.");
+            }
 
             if (match.Volunteer is null)
+            {
                 throw new InvalidOperationException(
                     "The matched volunteer could not be found.");
+            }
 
             if (match.Status != MatchStatus.Approved)
             {
@@ -49,9 +53,10 @@ namespace DVC.Infrastructure.Services
             var volunteer = match.Volunteer;
             var incident = match.Incident;
 
+            // Capacity validation
             if (!volunteer.IsAvailable)
             {
-                throw new InvalidOperationException(
+                throw new AssignmentValidationException(
                     "Capacity validation failed: volunteer is not available.");
             }
 
@@ -63,12 +68,16 @@ namespace DVC.Infrastructure.Services
 
             if (activeAssignments >= volunteer.MaximumActiveAssignments)
             {
-                throw new InvalidOperationException(
+                throw new AssignmentValidationException(
                     "Capacity validation failed: volunteer has reached maximum capacity.");
             }
 
-            var requiredSkills = incident.RequiredSkills ?? new List<string>();
-            var certifications = volunteer.Certifications ?? new List<string>();
+            // Certification validation
+            var requiredSkills =
+                incident.RequiredSkills ?? new List<string>();
+
+            var certifications =
+                volunteer.Certifications ?? new List<string>();
 
             var missingCertifications = requiredSkills
                 .Where(required =>
@@ -81,25 +90,27 @@ namespace DVC.Infrastructure.Services
 
             if (missingCertifications.Count > 0)
             {
-                throw new InvalidOperationException(
+                throw new AssignmentValidationException(
                     $"Certification validation failed: missing required certification(s): " +
                     $"{string.Join(", ", missingCertifications)}.");
             }
 
+            // Severity / comfort-tier validation
             if (incident.Severity > volunteer.ComfortTier)
             {
-                throw new InvalidOperationException(
+                throw new AssignmentValidationException(
                     $"Severity validation failed: incident severity " +
                     $"{incident.Severity} exceeds volunteer comfort tier " +
                     $"{volunteer.ComfortTier}.");
             }
 
+            // Time-window validation
             var now = DateTime.UtcNow;
 
             if (volunteer.AvailabilityStartUtc.HasValue &&
                 now < volunteer.AvailabilityStartUtc.Value)
             {
-                throw new InvalidOperationException(
+                throw new AssignmentValidationException(
                     "Time-window validation failed: volunteer availability has not started.");
             }
 
@@ -109,10 +120,11 @@ namespace DVC.Infrastructure.Services
             if (volunteer.AvailabilityEndUtc.HasValue &&
                 estimatedEnd > volunteer.AvailabilityEndUtc.Value)
             {
-                throw new InvalidOperationException(
+                throw new AssignmentValidationException(
                     "Time-window validation failed: volunteer availability does not cover the estimated duration.");
             }
 
+            // Prevent duplicate active assignments for the same match
             var hasExistingAssignment = await _db.Assignments
                 .AnyAsync(a =>
                     a.MatchId == match.Id &&
