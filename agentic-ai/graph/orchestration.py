@@ -15,7 +15,7 @@ def triage_node(state: AgentState) -> dict:
     return {
         "category": "Other",
         "severity": "Medium",
-        "required_skills": [],
+        "required_skills": state.get("required_skills") or [],
         "zone": "Unknown",
         "triage_confidence": 1.0,
         "status": "pending_matching",
