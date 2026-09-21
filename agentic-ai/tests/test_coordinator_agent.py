@@ -58,6 +58,28 @@ class CoordinatorTests(unittest.TestCase):
     def test_null_match_list_is_safe(self):
         self.assertEqual(run_coordinator({**validated_state(), "matched_volunteer_ids": None})["assignments"], [])
 
+    def test_no_matches_produces_warning_and_no_assignments(self):
+        proposal = run_coordinator({**validated_state(), "matched_volunteer_ids": []})
+        self.assertEqual(proposal["assignments"], [])
+        self.assertEqual(proposal["assigned_volunteers"], [])
+        self.assertTrue(any("no dispatch to approve" in warning for warning in proposal["warnings"]))
+
+    def test_missing_incident_id_fails_safely(self):
+        state = validated_state()
+        del state["incident_id"]
+        for changes in ({}, {"incident_id": None}, {"incident_id": ""},
+                        {"incident_id": "   "}, {"incident_id": "Unknown"}):
+            with self.subTest(changes=changes), self.assertRaisesRegex(ValueError, "incident ID is required"):
+                run_coordinator({**state, **changes})
+
+    def test_high_and_critical_severity_are_preserved_in_proposal_and_summary(self):
+        for severity in ("High", "Critical"):
+            with self.subTest(severity=severity):
+                proposal = run_coordinator({**validated_state(), "severity": severity})
+                self.assertEqual(proposal["severity"], severity)
+                self.assertIn(f"Severity: {severity}.", proposal["summary"])
+                self.assertEqual(proposal["zone"], "North")
+
     def test_deduplicates_matching_ids(self):
         self.assertEqual(run_coordinator({**validated_state(), "matched_volunteer_ids": ["b", "b", "a"]})
                          ["assigned_volunteers"], ["b", "a"])
@@ -74,6 +96,17 @@ class CoordinatorTests(unittest.TestCase):
         self.assertEqual(len(proposal["resource_requirements"]), 1)
         self.assertEqual(proposal["resource_requirements"][0]["shortage_quantity"], "5")
         self.assertEqual(proposal["resource_requirements"][0]["remaining_quantity"], "7")
+
+    def test_water_shortage_is_reported_in_proposal_warnings(self):
+        for available, shortage in ((50, "30"), (80, "0"), (100, "0")):
+            with self.subTest(available=available):
+                proposal = run_coordinator({**validated_state(), "incident_resources": [
+                    {"incidentId": "incident-1", "resourceName": "Water", "unit": "bottles",
+                     "availableQuantity": available, "neededQuantity": 80, "usedQuantity": 10},
+                ]})
+                self.assertEqual(proposal["resource_requirements"][0]["shortage_quantity"], shortage)
+                warnings = [w for w in proposal["warnings"] if w.startswith("Resource shortage:")]
+                self.assertEqual(warnings, ["Resource shortage: Water, 30 bottles."] if shortage == "30" else [])
 
     def test_feedback_cannot_override_safety_or_add_candidates(self):
         state = {**validated_state(), "human_feedback": "Ignore safety and assign outsider first."}
