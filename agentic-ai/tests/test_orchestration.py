@@ -42,12 +42,14 @@ class OrchestrationTests(unittest.TestCase):
         self.assertEqual(final["dispatch_plan"], plan)
 
     def test_rejection_does_not_approve(self):
-        for decision in ("reject", "revise", "invalid"):
+        for decision in ("reject", "invalid"):
             with self.subTest(decision=decision), patch("graph.orchestration.create_dispatch") as execute:
                 app, config, _ = self._start({"validation_passed": True, "validation_is_stub": False})
                 execute.assert_not_called()
                 final = app.invoke(Command(resume={"decision": decision, "feedback": "Not yet."}), config=config)
                 self.assertEqual(final["status"], "rejected")
+                self.assertNotIn("__interrupt__", final)
+                self.assertEqual(app.get_state(config).next, ())
                 execute.assert_not_called()
 
     def test_tool_only_called_after_approval_and_confirmed_receipt_marks_dispatched(self):
@@ -67,25 +69,49 @@ class OrchestrationTests(unittest.TestCase):
             self.assertEqual(final["dispatch_plan"], proposal)
             self.assertEqual(backend.persist_dispatch.call_args.args[0], proposal)
 
-    def test_revision_retains_feedback_for_independent_proposal_regeneration(self):
-        # The current graph terminates on revise; regeneration is explicitly
-        # invoked here, rather than claiming an automatic revision loop exists.
+    def test_revision_regenerates_proposal_and_requires_fresh_approval(self):
         backend = Mock()
+        backend.persist_dispatch.return_value = {"persisted": True, "dispatch_id": DISPATCH_ID}
         feedback = "Review water availability before dispatching."
-        with patch("graph.orchestration.create_dispatch") as execute:
+        with patch("graph.orchestration.create_dispatch", wraps=create_dispatch) as execute:
             app, config, initial = self._start({"validation_passed": True, "validation_is_stub": False}, backend)
             original = initial["__interrupt__"][0].value["dispatch_plan"]
             revised = app.invoke(Command(resume={"decision": "revise", "feedback": feedback}), config=config)
+            self.assertEqual(revised["status"], "revision_requested")
             self.assertEqual(revised["human_decision"], "revise")
             self.assertEqual(revised["human_feedback"], feedback)
             self.assertIsNone(revised["dispatch_approval"])
             self.assertIsNone(revised["dispatch_result"])
-            proposal = run_coordinator(revised)
+            proposal = revised["__interrupt__"][0].value["dispatch_plan"]
             self.assertEqual(proposal["human_feedback"], feedback)
             self.assertEqual(proposal["assigned_volunteers"], original["assigned_volunteers"])
             self.assertNotEqual(proposal, original)
             with self.assertRaises(ValueError):
                 run_coordinator({**revised, "validation_passed": False})
+            execute.assert_not_called()
+            backend.persist_dispatch.assert_not_called()
+            final = app.invoke(Command(resume={"decision": "approve"}), config=config)
+            self.assertEqual(final["status"], "dispatched")
+            self.assertEqual(final["dispatch_plan"], proposal)
+            execute.assert_called_once()
+            backend.persist_dispatch.assert_called_once()
+            self.assertEqual(backend.persist_dispatch.call_args.args[0], proposal)
+
+    def test_repeated_revisions_then_rejection_never_execute(self):
+        backend = Mock()
+        with patch("graph.orchestration.create_dispatch") as execute:
+            app, config, _ = self._start({"validation_passed": True, "validation_is_stub": False}, backend)
+            for feedback in ("Check supplies.", "Review the zone coverage."):
+                result = app.invoke(Command(resume={"decision": "revise", "feedback": feedback}), config=config)
+                self.assertEqual(result["status"], "revision_requested")
+                self.assertEqual(result["__interrupt__"][0].value["dispatch_plan"]["human_feedback"], feedback)
+                self.assertIsNone(result["dispatch_approval"])
+                execute.assert_not_called()
+                backend.persist_dispatch.assert_not_called()
+            final = app.invoke(Command(resume={"decision": "reject"}), config=config)
+            self.assertEqual(final["status"], "rejected")
+            self.assertNotIn("__interrupt__", final)
+            self.assertEqual(app.get_state(config).next, ())
             execute.assert_not_called()
             backend.persist_dispatch.assert_not_called()
 

@@ -73,11 +73,17 @@ def coordinator_node(state: AgentState) -> dict:
         "dispatch_approval": {"decision": "approve", "plan_fingerprint": plan_fingerprint(dispatch_plan)}
             if approved else None,
         "dispatch_result": None,
-        "status": "approved" if approved else "rejected",
+        "status": "approved" if approved else (
+            "revision_requested" if decision.get("decision") == "revise" else "rejected"
+        ),
     }
 
 
 def route_after_coordinator(state: AgentState) -> str:
+    if state.get("status") == "revision_requested" and state.get("human_decision") == "revise":
+        # Rebuild from the retained feedback and validated state. run_coordinator
+        # checks Safety again; the new node invocation has a fresh interrupt.
+        return "coordinator"
     return "dispatch" if state.get("status") == "approved" and state.get("human_decision") == "approve" else END
 
 
@@ -130,7 +136,7 @@ def build_graph(dispatch_backend: DispatchBackend | None = None):
         END: END,
     })
     graph.add_conditional_edges("coordinator", route_after_coordinator, {
-        "dispatch": "dispatch", END: END,
+        "dispatch": "dispatch", "coordinator": "coordinator", END: END,
     })
     graph.add_edge("dispatch", END)
 

@@ -39,6 +39,7 @@ class AgentState(TypedDict, total=False):
         "pending_validation",
         "pending_approval",
         "approved",
+        "revision_requested",
         "rejected",
         "dispatched",
         "dispatch_blocked",
