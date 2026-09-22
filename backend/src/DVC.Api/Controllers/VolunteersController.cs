@@ -49,7 +49,18 @@ namespace DVC.Api.Controllers
                     FullName = u.FullName,
                     Email = u.Email,
                     Skills = u.Skills ?? new List<string>(),
-                    IsAvailable = u.IsAvailable
+                    IsAvailable = u.IsAvailable,
+                    MaximumActiveAssignments = u.MaximumActiveAssignments,
+
+                    ActiveAssignments = _db.Assignments.Count(a =>
+                        a.VolunteerId == u.Id &&
+                        a.Status != AssignmentStatus.Completed &&
+                        a.Status != AssignmentStatus.Cancelled),
+
+                    Certifications = u.Certifications ?? new List<string>(),
+                    ComfortTier = u.ComfortTier.ToString(),
+                    AvailabilityStartUtc = u.AvailabilityStartUtc,
+                    AvailabilityEndUtc = u.AvailabilityEndUtc
                 })
                 .ToListAsync();
 
@@ -84,13 +95,24 @@ namespace DVC.Api.Controllers
             if (user is null || user.Role != UserRole.Volunteer)
                 return NotFound("Volunteer not found.");
 
+            var activeAssignments = await _db.Assignments.CountAsync(a =>
+                a.VolunteerId == id &&
+                a.Status != AssignmentStatus.Completed &&
+                a.Status != AssignmentStatus.Cancelled);
+
             return Ok(new VolunteerListItem
             {
                 Id = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
                 Skills = user.Skills ?? new List<string>(),
-                IsAvailable = user.IsAvailable
+                IsAvailable = user.IsAvailable,
+                MaximumActiveAssignments = user.MaximumActiveAssignments,
+                ActiveAssignments = activeAssignments,
+                Certifications = user.Certifications ?? new List<string>(),
+                ComfortTier = user.ComfortTier.ToString(),
+                AvailabilityStartUtc = user.AvailabilityStartUtc,
+                AvailabilityEndUtc = user.AvailabilityEndUtc
             });
         }
 

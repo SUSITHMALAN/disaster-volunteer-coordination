@@ -10,6 +10,13 @@ namespace DVC.Application.Dtos
         public string Email { get; set; } = string.Empty;
         public List<string> Skills { get; set; } = new();
         public bool IsAvailable { get; set; }
+
+        public int MaximumActiveAssignments { get; set; }
+        public int ActiveAssignments { get; set; }
+        public List<string> Certifications { get; set; } = new();
+        public string ComfortTier { get; set; } = string.Empty;
+        public DateTime? AvailabilityStartUtc { get; set; }
+        public DateTime? AvailabilityEndUtc { get; set; }
     }
 
     public class UpdateAvailabilityRequest
@@ -35,6 +42,7 @@ namespace DVC.Application.Dtos
         public string? Rationale { get; set; }
         public string Status { get; set; } = string.Empty;
     }
+
     public class UpdateProfileRequest
     {
         public List<string> Skills { get; set; } = new();
