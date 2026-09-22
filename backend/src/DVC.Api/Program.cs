@@ -62,6 +62,14 @@ builder.Services.AddDbContext<DvcDbContext>(options =>
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IIncidentService, IncidentService>();
 
+// Typed HttpClient for the FastAPI agentic-AI bridge.
+var agentBaseUrl = builder.Configuration["AgentService:BaseUrl"] ?? "http://localhost:8000";
+builder.Services.AddHttpClient<IAgentWorkflowService, AgentWorkflowService>(client =>
+{
+    client.BaseAddress = new Uri(agentBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(120); // LangGraph invocations can take a while
+});
+
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"]!;
 builder.Services.AddAuthentication(options =>
