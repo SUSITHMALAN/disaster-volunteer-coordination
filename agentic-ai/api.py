@@ -1,15 +1,42 @@
+﻿import logging
+import os
+import uuid
+from contextlib import asynccontextmanager
+from typing import Optional
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import Optional
-import uuid
 
 from langgraph.types import Command
 from graph.orchestration import build_graph
 
-app = FastAPI(title="DVC Agentic AI Service")
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-_graph = build_graph()
+# ---------------------------------------------------------------------------
+# Application lifespan — build the graph once at startup so the PostgreSQL
+# connection pool is opened before the first request arrives.
+# ---------------------------------------------------------------------------
 
+_graph = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global _graph
+    db_url = os.environ.get("POSTGRES_URL")
+    _graph = build_graph(db_url=db_url)
+    logger.info("LangGraph workflow graph initialised.")
+    yield
+    # Nothing to tear down; the connection pool closes when the process exits.
+
+
+app = FastAPI(title="DVC Agentic AI Service", lifespan=lifespan)
+
+
+# ---------------------------------------------------------------------------
+# Request / response models
+# ---------------------------------------------------------------------------
 
 class StartWorkflowRequest(BaseModel):
     incident_id: str
@@ -21,6 +48,10 @@ class ApprovalRequest(BaseModel):
     decision: str
     feedback: Optional[str] = None
 
+
+# ---------------------------------------------------------------------------
+# Endpoints
+# ---------------------------------------------------------------------------
 
 @app.post("/workflows")
 def start_workflow(request: StartWorkflowRequest):
@@ -74,6 +105,10 @@ def approve_workflow(thread_id: str, request: ApprovalRequest):
         "state": _serialize(result),
     }
 
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
 def _serialize(state: dict) -> dict:
     return {k: v for k, v in state.items() if k != "__interrupt__"}
