@@ -6,6 +6,8 @@ import 'login_screen.dart';
 import 'volunteers_screen.dart';
 import 'resources_screen.dart';
 import 'resource_reports_screen.dart';
+import 'report_incident_screen.dart';
+import 'incidents_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final AppUser user;
@@ -20,6 +22,7 @@ class DashboardScreen extends StatelessWidget {
       case 'Admin':
         return [
           _DashLink('Volunteers', 'volunteers'),
+          _DashLink('Incidents', 'incidents'),
           _DashLink('Resources & supplies', 'resources'),
           _DashLink('Resource reports', 'resource_reports'),
         ];
@@ -43,6 +46,16 @@ class DashboardScreen extends StatelessWidget {
       case 'volunteers':
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (_) => const VolunteersScreen()));
+        break;
+      case 'incidents':
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const IncidentsScreen()),
+        );
+        break;
+      case 'incidents_new':
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const ReportIncidentScreen()),
+        );
         break;
       default:
         ScaffoldMessenger.of(context)
