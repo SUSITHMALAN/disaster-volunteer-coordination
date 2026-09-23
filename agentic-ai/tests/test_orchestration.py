@@ -25,8 +25,8 @@ def test_graph_pauses_for_approval(monkeypatch):
                     "maximumActiveAssignments": 2,
                     "certifications": ["first-aid"],
                     "comfortTier": "High",
-                    "availabilityStartUtc": "2026-09-23T08:00:00Z",
-                    "availabilityEndUtc": "2026-09-23T18:00:00Z",
+                    "availabilityStartUtc": "2020-01-01T00:00:00Z",
+                    "availabilityEndUtc": "2099-12-31T23:59:59Z",
                 }
             ],
             "matched_volunteer_ids": ["volunteer-1"],
