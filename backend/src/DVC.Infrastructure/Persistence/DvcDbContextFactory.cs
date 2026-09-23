@@ -10,7 +10,7 @@ namespace DVC.Infrastructure.Persistence
             var optionsBuilder = new DbContextOptionsBuilder<DvcDbContext>();
 
             optionsBuilder.UseNpgsql(
-                "Host=localhost;Port=5432;Database=dvc_dev;Username=postgres;Password=1234");
+                "Host=aws-0-ap-northeast-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.addzhynkeehvvloknyke;Password=5W3NtUhPJzb1eMlH;Ssl Mode=Require;Trust Server Certificate=true");
 
             return new DvcDbContext(optionsBuilder.Options);
         }
