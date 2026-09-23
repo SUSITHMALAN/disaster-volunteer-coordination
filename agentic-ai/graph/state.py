@@ -5,6 +5,7 @@ class AgentState(TypedDict, total=False):
     # --- Input ---
     incident_id: str
     raw_report_text: str
+    estimated_duration_minutes: Optional[int]
 
     # --- Triage Agent output ---
     category: Optional[str]
@@ -18,8 +19,11 @@ class AgentState(TypedDict, total=False):
     matched_volunteer_ids: Optional[list[str]]
 
     # --- Safety/Validation Agent output ---
-    validation_passed: Optional[bool]
+    validation_verdict: Optional[
+        Literal["approved", "rejected", "needs_revision"]
+    ]
     validation_notes: Optional[str]
+    validated_volunteer_id: Optional[str]
 
     # --- Coordinator/Dispatch Agent output ---
     dispatch_plan: Optional[dict]
