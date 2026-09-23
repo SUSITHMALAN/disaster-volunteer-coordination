@@ -62,7 +62,7 @@ class _ResourceFormScreenState extends State<ResourceFormScreen> {
         _needed.text = formatQuantity(resource.neededQuantity);
         _used.text = formatQuantity(resource.usedQuantity);
       } else {
-        final incidents = await IncidentService.getIncidents();
+        final incidents = await IncidentService.getIncidentSummaries();
         if (!mounted) return;
         _incidents = incidents;
         _incidentId = incidents.any((i) => i.id == widget.incidentId)

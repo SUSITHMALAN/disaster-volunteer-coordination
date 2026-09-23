@@ -43,7 +43,7 @@ class _ResourceFiltersState extends State<ResourceFilters> {
       _error = null;
     });
     try {
-      final data = await IncidentService.getIncidents();
+      final data = await IncidentService.getIncidentSummaries();
       if (mounted) {
         setState(() => _incidents = data);
         widget.onIncidentsLoaded?.call(data);
