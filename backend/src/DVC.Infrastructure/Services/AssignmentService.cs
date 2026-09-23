@@ -24,24 +24,23 @@ namespace DVC.Infrastructure.Services
                     "Estimated duration must be greater than zero.");
             }
 
+            // Start a transaction so the volunteer capacity check
+            // and assignment creation happen atomically.
+            await using var transaction =
+                await _db.Database.BeginTransactionAsync();
+
             var match = await _db.VolunteerMatches
                 .Include(m => m.Incident)
-                .Include(m => m.Volunteer)
                 .FirstOrDefaultAsync(m => m.Id == request.MatchId);
 
             if (match is null)
-                throw new KeyNotFoundException("Volunteer match not found.");
+                throw new KeyNotFoundException(
+                    "Volunteer match not found.");
 
             if (match.Incident is null)
             {
                 throw new InvalidOperationException(
                     "The matched incident could not be found.");
-            }
-
-            if (match.Volunteer is null)
-            {
-                throw new InvalidOperationException(
-                    "The matched volunteer could not be found.");
             }
 
             if (match.Status != MatchStatus.Approved)
@@ -50,7 +49,23 @@ namespace DVC.Infrastructure.Services
                     "Only approved volunteer matches can be assigned.");
             }
 
-            var volunteer = match.Volunteer;
+            // Lock the volunteer row in PostgreSQL.
+            // Any other assignment transaction targeting the same
+            // volunteer must wait until this transaction completes.
+            var volunteer = await _db.Users
+                .FromSqlInterpolated($@"
+                    SELECT *
+                    FROM ""Users""
+                    WHERE ""Id"" = {match.VolunteerId}
+                    FOR UPDATE")
+                .SingleOrDefaultAsync();
+
+            if (volunteer is null)
+            {
+                throw new InvalidOperationException(
+                    "The matched volunteer could not be found.");
+            }
+
             var incident = match.Incident;
 
             // Capacity validation
@@ -60,6 +75,9 @@ namespace DVC.Infrastructure.Services
                     "Capacity validation failed: volunteer is not available.");
             }
 
+            // This count is performed AFTER acquiring the row lock.
+            // Therefore concurrent assignment requests for this volunteer
+            // cannot both observe the same available capacity.
             var activeAssignments = await _db.Assignments
                 .CountAsync(a =>
                     a.VolunteerId == volunteer.Id &&
@@ -91,7 +109,7 @@ namespace DVC.Infrastructure.Services
             if (missingCertifications.Count > 0)
             {
                 throw new AssignmentValidationException(
-                    $"Certification validation failed: missing required certification(s): " +
+                    "Certification validation failed: missing required certification(s): " +
                     $"{string.Join(", ", missingCertifications)}.");
             }
 
@@ -124,7 +142,8 @@ namespace DVC.Infrastructure.Services
                     "Time-window validation failed: volunteer availability does not cover the estimated duration.");
             }
 
-            // Prevent duplicate active assignments for the same match
+            // Prevent duplicate active assignments for the same match.
+            // This check is also protected by the volunteer row lock.
             var hasExistingAssignment = await _db.Assignments
                 .AnyAsync(a =>
                     a.MatchId == match.Id &&
@@ -160,6 +179,9 @@ namespace DVC.Infrastructure.Services
             }
 
             await _db.SaveChangesAsync();
+
+            // Commit only after all database changes succeed.
+            await transaction.CommitAsync();
 
             return ToResponse(assignment);
         }
