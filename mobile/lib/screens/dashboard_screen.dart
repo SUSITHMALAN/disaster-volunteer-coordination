@@ -3,6 +3,8 @@ import '../models/user.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
 import 'volunteers_screen.dart';
+import 'report_incident_screen.dart';
+import 'incidents_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final AppUser user;
@@ -17,6 +19,7 @@ class DashboardScreen extends StatelessWidget {
       case 'Admin':
         return [
           _DashLink('Volunteers', 'volunteers'),
+          _DashLink('Incidents', 'incidents'),
         ];
       default: // Requester
         return [_DashLink('Report an incident', 'incidents_new')];
@@ -28,6 +31,16 @@ class DashboardScreen extends StatelessWidget {
       case 'volunteers':
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const VolunteersScreen()),
+        );
+        break;
+      case 'incidents':
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const IncidentsScreen()),
+        );
+        break;
+      case 'incidents_new':
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const ReportIncidentScreen()),
         );
         break;
       default:
