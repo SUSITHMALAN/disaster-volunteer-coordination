@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,8 +41,11 @@ class ApiClient {
     return _handleResponse(response);
   }
 
-  static Future<dynamic> post(String path, Map<String, dynamic> body,
-      {bool withAuth = true}) async {
+  static Future<dynamic> post(
+    String path,
+    Map<String, dynamic> body, {
+    bool withAuth = true,
+  }) async {
     final response = await http.post(
       Uri.parse('$baseUrl$path'),
       headers: await _headers(withAuth: withAuth),
@@ -59,12 +63,22 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  static Future<dynamic> put(String path, Map<String, dynamic> body) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl$path'),
+      headers: await _headers(),
+      body: jsonEncode(body),
+    );
+    return _handleResponse(response);
+  }
+
   static dynamic _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       if (response.body.isEmpty) return null;
       return jsonDecode(response.body);
     }
     throw Exception(
-        'Request failed (${response.statusCode}): ${response.body}');
+      'Request failed (${response.statusCode}): ${response.body}',
+    );
   }
 }
