@@ -17,6 +17,7 @@ class AgentState(TypedDict, total=False):
     # --- Matching Agent output ---
     candidate_volunteers: Optional[list[dict]]
     matched_volunteer_ids: Optional[list[str]]
+    match_scores: Optional[dict[str, float]]
 
     # --- Safety/Validation Agent output ---
     validation_verdict: Optional[
@@ -24,10 +25,16 @@ class AgentState(TypedDict, total=False):
     ]
     validation_notes: Optional[str]
     validated_volunteer_id: Optional[str]
+    validation_is_stub: Optional[bool]
+    validated_volunteer_ids: Optional[list[str]]
 
     # --- Coordinator/Dispatch Agent output ---
     dispatch_plan: Optional[dict]
     dispatch_summary: Optional[str]
+    dispatch_approval: Optional[dict]
+    dispatch_result: Optional[dict]
+    # Optional Resource API snapshots for this incident; no fetches in the agent.
+    incident_resources: Optional[list[dict]]
 
     # --- Human-in-the-loop control ---
     status: Literal[
@@ -36,8 +43,12 @@ class AgentState(TypedDict, total=False):
         "pending_validation",
         "pending_approval",
         "approved",
+        "revision_requested",
         "rejected",
         "dispatched",
+        "dispatch_blocked",
+        "dispatch_failed",
+        "dispatch_unknown",
     ]
     human_decision: Optional[Literal["approve", "reject", "revise"]]
     human_feedback: Optional[str]
