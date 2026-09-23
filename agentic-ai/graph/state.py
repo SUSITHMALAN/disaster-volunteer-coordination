@@ -23,6 +23,7 @@ class AgentState(TypedDict, total=False):
     validation_verdict: Optional[
         Literal["approved", "rejected", "needs_revision"]
     ]
+    validation_passed: Optional[bool]
     validation_notes: Optional[str]
     validated_volunteer_id: Optional[str]
     validation_is_stub: Optional[bool]

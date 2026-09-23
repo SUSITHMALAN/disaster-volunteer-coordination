@@ -172,7 +172,7 @@ def dispatch_node(state: AgentState, backend: DispatchBackend | None = None) -> 
 
 def route_after_validation(state: AgentState) -> str:
     return "coordinator" if (
-        state.get("validation_passed") is True or state.get("validation_verdict") == APPROVED
+        state.get("validation_passed") is True and not state.get("validation_is_stub")
     ) else END
 
 
