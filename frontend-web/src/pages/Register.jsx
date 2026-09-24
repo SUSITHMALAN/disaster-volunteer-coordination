@@ -11,6 +11,7 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("Requester");
+  const [skillsInput, setSkillsInput] = useState("");
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const { register } = useAuth();
@@ -20,8 +21,12 @@ export default function Register() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
+    const parsedSkills = role === "Volunteer"
+      ? skillsInput.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean)
+      : [];
+
     try {
-      await register({ fullName, email, password, role, skills: [] });
+      await register({ fullName, email, password, role, skills: parsedSkills });
       navigate("/");
     } catch (err) {
       setError("Couldn't create your account. That email may already be registered.");
@@ -79,6 +84,18 @@ export default function Register() {
             ))}
           </select>
         </label>
+
+        {role === "Volunteer" && (
+          <label className="auth-form__label">
+            Your Skills (optional, comma-separated)
+            <input
+              type="text"
+              value={skillsInput}
+              onChange={(e) => setSkillsInput(e.target.value)}
+              placeholder="e.g. first-aid, driving, cpr, boat-operation"
+            />
+          </label>
+        )}
 
         {error && <p className="auth-form__error">{error}</p>}
 
