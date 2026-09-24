@@ -33,3 +33,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+
+# Local backend secrets
+backend/src/DVC.Api/appsettings.Local.json

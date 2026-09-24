@@ -7,10 +7,18 @@ namespace DVC.Infrastructure.Persistence
     {
         public DvcDbContext CreateDbContext(string[] args)
         {
+            var connectionString =
+                Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "ConnectionStrings__DefaultConnection environment variable is not configured.");
+            }
+
             var optionsBuilder = new DbContextOptionsBuilder<DvcDbContext>();
 
-            optionsBuilder.UseNpgsql(
-                "Host=aws-0-ap-northeast-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.addzhynkeehvvloknyke;Password=5W3NtUhPJzb1eMlH;Ssl Mode=Require;Trust Server Certificate=true");
+            optionsBuilder.UseNpgsql(connectionString);
 
             return new DvcDbContext(optionsBuilder.Options);
         }
