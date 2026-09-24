@@ -10,6 +10,7 @@ const ICON_MAP = {
   "Volunteers": { emoji: "🙋", cls: "volunteers" },
   "Matches": { emoji: "🤝", cls: "matches" },
   "Approval queue": { emoji: "✅", cls: "approvals" },
+  "Assignments": { emoji: "📝", cls: "assignments" },
 };
 
 const ROLE_LINKS = {
@@ -19,11 +20,13 @@ const ROLE_LINKS = {
     { label: "Incidents", to: "/incidents" },
     { label: "Volunteers", to: "/volunteers" },
     { label: "Matches", to: "/matches" },
+    { label: "Assignments", to: "/assignments" },
   ],
   Admin: [
     { label: "Incidents", to: "/incidents" },
     { label: "Volunteers", to: "/volunteers" },
     { label: "Matches", to: "/matches" },
+    { label: "Assignments", to: "/assignments" },
   ],
 };
 
