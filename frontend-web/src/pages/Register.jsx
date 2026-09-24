@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import BackButton from "../components/BackButton";
 import "./AuthForm.css";
 
 const ROLES = ["Requester", "Volunteer", "Coordinator", "Admin"];
@@ -32,6 +33,7 @@ export default function Register() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
+        <BackButton to="/login" label="Back to Sign in" className="dvc-back-btn--compact" style={{ alignSelf: "flex-start", marginBottom: "8px" }} />
         <h1 className="auth-form__title">Join the mission</h1>
         <p className="auth-form__subtitle">Create your account to start coordinating</p>
 

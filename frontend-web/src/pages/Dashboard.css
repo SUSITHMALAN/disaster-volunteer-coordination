@@ -146,6 +146,11 @@
   border: 1px solid rgba(14, 165, 233, 0.3);
 }
 
+.dashboard__link-icon--matches {
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
 .dashboard__link-text {
   position: relative;
   z-index: 1;

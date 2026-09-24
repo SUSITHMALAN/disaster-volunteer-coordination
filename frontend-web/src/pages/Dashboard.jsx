@@ -7,6 +7,7 @@ const ICON_MAP = {
   "Incidents": { emoji: "⚠️", cls: "incidents" },
   "My profile & availability": { emoji: "👤", cls: "profile" },
   "Volunteers": { emoji: "🙋", cls: "volunteers" },
+  "Matches": { emoji: "🤝", cls: "matches" },
   "Approval queue": { emoji: "✅", cls: "approvals" },
 };
 
@@ -17,12 +18,11 @@ const ROLE_LINKS = {
     { label: "Incidents", to: "/incidents" },
     { label: "Volunteers", to: "/volunteers" },
     { label: "Matches", to: "/matches" },
-    { label: "Approval queue", to: "/approvals" },
   ],
   Admin: [
     { label: "Incidents", to: "/incidents" },
     { label: "Volunteers", to: "/volunteers" },
-    { label: "Approval queue", to: "/approvals" },
+    { label: "Matches", to: "/matches" },
   ],
 };
 
