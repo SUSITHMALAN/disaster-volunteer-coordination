@@ -1,5 +1,6 @@
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import IncidentsMap from "../components/IncidentsMap";
 import "./Dashboard.css";
 
 const ICON_MAP = {
@@ -29,6 +30,7 @@ const ROLE_LINKS = {
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const links = ROLE_LINKS[user?.role] || [];
+  const isCoordinatorOrAdmin = user?.role === "Coordinator" || user?.role === "Admin";
 
   return (
     <div className="dashboard">
@@ -55,6 +57,13 @@ export default function Dashboard() {
           );
         })}
       </div>
+
+      {/* Coordinator & Admin Real-Time Geospatial Risk Map */}
+      {isCoordinatorOrAdmin && (
+        <div className="dashboard__map-section">
+          <IncidentsMap />
+        </div>
+      )}
 
       <button className="dashboard__logout" onClick={logout}>
         Sign out
