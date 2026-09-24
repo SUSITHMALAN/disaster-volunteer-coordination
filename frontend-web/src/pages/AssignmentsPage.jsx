@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import BackButton from "../components/BackButton";
 import {
   getAssignmentHistory,
+  getVolunteerCapacity,
   updateAssignmentStatus,
 } from "../api/assignments";
 import "./AssignmentsPage.css";
@@ -59,6 +60,41 @@ export default function AssignmentsPage() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [error, setError] = useState("");
+  const [capacities, setCapacities] = useState({});
+  const [capacityLoading, setCapacityLoading] = useState(false);
+
+  async function loadVolunteerCapacities(data) {
+    const volunteerIds = [
+      ...new Set(
+        data.map((assignment) => assignment.volunteerId).filter(Boolean),
+      ),
+    ];
+
+    if (volunteerIds.length === 0) {
+      setCapacities({});
+      return;
+    }
+
+    setCapacityLoading(true);
+
+    try {
+      const results = await Promise.all(
+        volunteerIds.map(async (volunteerId) => {
+          try {
+            const capacity = await getVolunteerCapacity(volunteerId);
+
+            return [volunteerId, capacity];
+          } catch {
+            return [volunteerId, null];
+          }
+        }),
+      );
+
+      setCapacities(Object.fromEntries(results));
+    } finally {
+      setCapacityLoading(false);
+    }
+  }
 
   async function loadAssignments() {
     setLoading(true);
@@ -66,7 +102,11 @@ export default function AssignmentsPage() {
 
     try {
       const data = await getAssignmentHistory();
-      setAssignments(data || []);
+      const assignmentData = data || [];
+
+      setAssignments(assignmentData);
+      await loadVolunteerCapacities(assignmentData);
+
     } catch (err) {
       setError(err.message || "Failed to load assignments.");
     } finally {
@@ -213,6 +253,7 @@ export default function AssignmentsPage() {
                     items.map((assignment) => {
                       const nextStatus = NEXT_STATUS[assignment.status];
                       const nextAction = getNextAction(assignment.status);
+                      const capacity = capacities[assignment.volunteerId];
 
                       return (
                         <article
@@ -242,6 +283,28 @@ export default function AssignmentsPage() {
                             <div>
                               <dt>Volunteer</dt>
                               <dd>{assignment.volunteerId}</dd>
+                            </div>
+
+                            <div>
+                              <dt>Capacity</dt>
+                              <dd>
+                                {capacityLoading && !capacity
+                                  ? "Loading..."
+                                  : capacity
+                                    ? `${capacity.activeAssignments} / ${capacity.maximumActiveAssignments} active`
+                                    : "Unavailable"}
+                              </dd>
+                            </div>
+
+                            <div>
+                              <dt>Availability</dt>
+                              <dd>
+                                {capacity
+                                  ? capacity.isAvailable
+                                    ? "Available"
+                                    : "Unavailable"
+                                  : "Unknown"}
+                              </dd>
                             </div>
 
                             <div>
