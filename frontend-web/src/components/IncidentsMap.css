@@ -380,6 +380,13 @@
   line-height: 1.4 !important;
 }
 
+.dvc-map-popup {
+  padding: 14px;
+  min-width: 240px;
+  color: #f8fafc;
+  line-height: 1.4;
+}
+
 .dvc-map-popup__header {
   display: flex;
   align-items: center;

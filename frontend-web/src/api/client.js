@@ -15,6 +15,10 @@ export async function apiFetch(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem("dvc_token");
+      localStorage.removeItem("dvc_user");
+    }
     const text = await response.text();
     throw new Error(text || `Request failed: ${response.status}`);
   }
