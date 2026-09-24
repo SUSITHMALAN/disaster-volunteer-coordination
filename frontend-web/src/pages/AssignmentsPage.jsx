@@ -250,20 +250,39 @@ export default function AssignmentsPage() {
                             </div>
                           </dl>
 
-                          {nextStatus && (
-                            <button
-                              type="button"
-                              className="assignment-card__action"
-                              disabled={updatingId === assignment.id}
-                              onClick={() =>
-                                handleStatusUpdate(assignment.id, nextStatus)
-                              }
-                            >
-                              {updatingId === assignment.id
-                                ? "Updating..."
-                                : nextAction}
-                            </button>
-                          )}
+                          <div className="assignment-card__actions">
+                            {nextStatus && (
+                              <button
+                                type="button"
+                                className="assignment-card__action"
+                                disabled={updatingId === assignment.id}
+                                onClick={() =>
+                                  handleStatusUpdate(assignment.id, nextStatus)
+                                }
+                              >
+                                {updatingId === assignment.id
+                                  ? "Updating..."
+                                  : nextAction}
+                              </button>
+                            )}
+
+                            {["Assigned", "Dispatched", "InProgress"].includes(
+                              assignment.status,
+                            ) && (
+                              <button
+                                type="button"
+                                className="assignment-card__cancel"
+                                disabled={updatingId === assignment.id}
+                                onClick={() =>
+                                  handleStatusUpdate(assignment.id, "Cancelled")
+                                }
+                              >
+                                {updatingId === assignment.id
+                                  ? "Updating..."
+                                  : "Cancel"}
+                              </button>
+                            )}
+                          </div>
                         </article>
                       );
                     })
