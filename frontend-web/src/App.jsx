@@ -10,9 +10,18 @@ import ReportIncidentPage from "./pages/ReportIncidentPage";
 import AssignmentsPage from "./pages/AssignmentsPage";
 import "./App.css";
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, allowedRoles }) {
   const { user } = useAuth();
-  return user ? children : <Navigate to="/login" replace />;
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 }
 
 function NavigationHeader() {
@@ -162,7 +171,7 @@ function AppRoutes() {
       <Route
         path="/matches"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["Coordinator", "Admin"]}>
             <MatchesPage />
           </ProtectedRoute>
         }
@@ -170,7 +179,7 @@ function AppRoutes() {
       <Route
         path="/assignments"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["Coordinator", "Admin"]}>
             <AssignmentsPage />
           </ProtectedRoute>
         }
@@ -184,17 +193,17 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/incidents"
+        path="/volunteers"
         element={
-          <ProtectedRoute>
-            <IncidentsPage />
+          <ProtectedRoute allowedRoles={["Coordinator", "Admin", "Volunteer"]}>
+            <VolunteersPage />
           </ProtectedRoute>
         }
       />
       <Route
         path="/incidents/new"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["Requester"]}>
             <ReportIncidentPage />
           </ProtectedRoute>
         }
