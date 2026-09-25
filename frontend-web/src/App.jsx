@@ -7,11 +7,21 @@ import VolunteersPage from "./pages/VolunteersPage";
 import MatchesPage from "./pages/MatchesPage.jsx";
 import IncidentsPage from "./pages/IncidentsPage";
 import ReportIncidentPage from "./pages/ReportIncidentPage";
+import AssignmentsPage from "./pages/AssignmentsPage";
 import "./App.css";
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, allowedRoles }) {
   const { user } = useAuth();
-  return user ? children : <Navigate to="/login" replace />;
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 }
 
 function NavigationHeader() {
@@ -27,7 +37,9 @@ function NavigationHeader() {
       <div className="app-header__left">
         <Link to="/" className="app-header__brand" title="Go to Dashboard">
           <span className="app-header__mark">DVC</span>
-          <span className="app-header__title">Disaster Volunteer Coordination</span>
+          <span className="app-header__title">
+            Disaster Volunteer Coordination
+          </span>
         </Link>
       </div>
 
@@ -46,7 +58,14 @@ function NavigationHeader() {
               }}
               title="Go back to previous page"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
                 <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
               <span>Back</span>
@@ -80,6 +99,13 @@ function NavigationHeader() {
                 >
                   Matches
                 </Link>
+
+                <Link
+                  to="/assignments"
+                  className={`app-header__nav-link ${location.pathname === "/assignments" ? "app-header__nav-link--active" : ""}`}
+                >
+                  Assignments
+                </Link>
               </>
             )}
             {user.role === "Requester" && (
@@ -108,7 +134,11 @@ function NavigationHeader() {
             <span className="app-header__user-name">{user.fullName}</span>
             <span className="app-header__user-role">{user.role}</span>
           </div>
-          <button className="app-header__signout-btn" onClick={logout} title="Sign out">
+          <button
+            className="app-header__signout-btn"
+            onClick={logout}
+            title="Sign out"
+          >
             Sign out
           </button>
         </div>
@@ -122,8 +152,14 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
-      <Route path="/register" element={user ? <Navigate to="/" replace /> : <Register />} />
+      <Route
+        path="/login"
+        element={user ? <Navigate to="/" replace /> : <Login />}
+      />
+      <Route
+        path="/register"
+        element={user ? <Navigate to="/" replace /> : <Register />}
+      />
       <Route
         path="/"
         element={
@@ -135,8 +171,16 @@ function AppRoutes() {
       <Route
         path="/matches"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["Coordinator", "Admin"]}>
             <MatchesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/assignments"
+        element={
+          <ProtectedRoute allowedRoles={["Coordinator", "Admin"]}>
+            <AssignmentsPage />
           </ProtectedRoute>
         }
       />
@@ -149,17 +193,17 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/incidents"
+        path="/volunteers"
         element={
-          <ProtectedRoute>
-            <IncidentsPage />
+          <ProtectedRoute allowedRoles={["Coordinator", "Admin", "Volunteer"]}>
+            <VolunteersPage />
           </ProtectedRoute>
         }
       />
       <Route
         path="/incidents/new"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["Requester"]}>
             <ReportIncidentPage />
           </ProtectedRoute>
         }
