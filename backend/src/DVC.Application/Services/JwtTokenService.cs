@@ -27,14 +27,20 @@ namespace DVC.Application.Services
                 new Claim("fullName", user.FullName)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+            var keyStr = _config["Jwt:Key"];
+            if (string.IsNullOrWhiteSpace(keyStr))
+            {
+                keyStr = "DvcSuperSecretKeyForDisasterVolunteerCoordinationSystem2026!";
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyStr));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
+                issuer: _config["Jwt:Issuer"] ?? "DvcApi",
+                audience: _config["Jwt:Audience"] ?? "DvcClient",
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(double.Parse(_config["Jwt:ExpiryMinutes"]!)),
+                expires: DateTime.UtcNow.AddMinutes(double.Parse(_config["Jwt:ExpiryMinutes"] ?? "120")),
                 signingCredentials: creds
             );
 
