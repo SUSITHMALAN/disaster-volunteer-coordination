@@ -18,6 +18,8 @@ namespace DVC.Infrastructure.Persistence
 
         public DbSet<Assignment> Assignments => Set<Assignment>();
 
+        public DbSet<Dispatch> Dispatches => Set<Dispatch>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -144,6 +146,27 @@ namespace DVC.Infrastructure.Persistence
                     .WithMany()
                     .HasForeignKey(a => a.MatchId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Dispatch configuration
+            modelBuilder.Entity<Dispatch>(entity =>
+            {
+                entity.HasKey(d => d.Id);
+
+                entity.Property(d => d.IdempotencyKey)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.HasIndex(d => d.IdempotencyKey)
+                    .IsUnique();
+
+                entity.Property(d => d.CreatedAtUtc)
+                    .IsRequired();
+
+                entity.HasOne(d => d.Incident)
+                    .WithMany()
+                    .HasForeignKey(d => d.IncidentId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

@@ -9,8 +9,15 @@ namespace DVC.Infrastructure.Persistence
         {
             var optionsBuilder = new DbContextOptionsBuilder<DvcDbContext>();
 
-            optionsBuilder.UseNpgsql(
-                "Host=localhost;Port=5432;Database=dvc_dev;Username=postgres;Password=1234");
+            var connectionString = Environment.GetEnvironmentVariable("DVC_DATABASE_CONNECTION");
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "DVC_DATABASE_CONNECTION environment variable is not configured.");
+            }
+
+            optionsBuilder.UseNpgsql(connectionString);
 
             return new DvcDbContext(optionsBuilder.Options);
         }
