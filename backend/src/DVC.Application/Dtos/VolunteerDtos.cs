@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DVC.Domain.Entities;
 
 namespace DVC.Application.Dtos
 {
@@ -30,6 +31,11 @@ namespace DVC.Application.Dtos
         public Guid VolunteerId { get; set; }
         public double Score { get; set; }
         public string? Rationale { get; set; }
+    }
+
+    public class UpdateMatchStatusRequest
+    {
+        public MatchStatus NewStatus { get; set; }
     }
 
     public class MatchResponse
