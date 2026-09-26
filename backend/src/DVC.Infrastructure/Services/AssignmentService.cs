@@ -90,27 +90,27 @@ namespace DVC.Infrastructure.Services
                     "Capacity validation failed: volunteer has reached maximum capacity.");
             }
 
-            // Certification validation
+            // Skill validation
             var requiredSkills =
                 incident.RequiredSkills ?? new List<string>();
 
-            var certifications =
-                volunteer.Certifications ?? new List<string>();
+            var volunteerSkills =
+                volunteer.Skills ?? new List<string>();
 
-            var missingCertifications = requiredSkills
+            var missingSkills = requiredSkills
                 .Where(required =>
-                    !certifications.Any(certification =>
+                    !volunteerSkills.Any(skill =>
                         string.Equals(
-                            certification.Trim(),
+                            skill.Trim(),
                             required.Trim(),
                             StringComparison.OrdinalIgnoreCase)))
                 .ToList();
 
-            if (missingCertifications.Count > 0)
+            if (missingSkills.Count > 0)
             {
                 throw new AssignmentValidationException(
-                    "Certification validation failed: missing required certification(s): " +
-                    $"{string.Join(", ", missingCertifications)}.");
+                    "Skill validation failed: missing required skill(s): " +
+                    $"{string.Join(", ", missingSkills)}.");
             }
 
             // Severity / comfort-tier validation
