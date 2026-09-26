@@ -8,6 +8,8 @@ import 'resources_screen.dart';
 import 'resource_reports_screen.dart';
 import 'report_incident_screen.dart';
 import 'incidents_screen.dart';
+import 'assigned_tasks_screen.dart';
+import 'assignments_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final AppUser user;
@@ -17,7 +19,12 @@ class DashboardScreen extends StatelessWidget {
   List<_DashLink> get _links {
     switch (user.role) {
       case 'Volunteer':
-        return [_DashLink('My profile & availability', 'volunteers')];
+        return [
+          _DashLink('My assigned tasks', 'assigned_tasks'),
+          _DashLink('My Assigned Tasks', 'assignments'),
+          _DashLink('My profile & availability', 'volunteers'),
+        ];
+
       case 'Coordinator':
       case 'Admin':
         return [
@@ -26,48 +33,92 @@ class DashboardScreen extends StatelessWidget {
           _DashLink('Resources & supplies', 'resources'),
           _DashLink('Resource reports', 'resource_reports'),
         ];
+
       default: // Requester
-        return [_DashLink('Report an incident', 'incidents_new')];
+        return [
+          _DashLink('Report an incident', 'incidents_new'),
+        ];
     }
   }
 
   void _navigate(BuildContext context, String key) {
     switch (key) {
       case 'resources':
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => ResourcesScreen(user: user)));
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ResourcesScreen(user: user),
+          ),
+        );
         break;
+
       case 'resource_reports':
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => ResourceReportsScreen(user: user)),
+          MaterialPageRoute(
+            builder: (_) => ResourceReportsScreen(user: user),
+          ),
         );
         break;
+
       case 'volunteers':
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => const VolunteersScreen()));
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const VolunteersScreen(),
+          ),
+        );
         break;
+
       case 'incidents':
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const IncidentsScreen()),
+          MaterialPageRoute(
+            builder: (_) => const IncidentsScreen(),
+          ),
         );
         break;
+
       case 'incidents_new':
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const ReportIncidentScreen()),
+          MaterialPageRoute(
+            builder: (_) => const ReportIncidentScreen(),
+          ),
         );
         break;
+
+      case 'assigned_tasks':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => AssignedTasksScreen(user: user),
+          ),
+        );
+        break;
+
+      case 'assignments':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => AssignmentsScreen(
+              volunteerId: user.userId,
+            ),
+          ),
+        );
+        break;
+
       default:
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Not built yet')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Not built yet'),
+          ),
+        );
     }
   }
 
   Future<void> _logout(BuildContext context) async {
     await AuthService.logout();
+
     if (!context.mounted) return;
+
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(),
+      ),
       (route) => false,
     );
   }
@@ -94,7 +145,10 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Signed in as ${user.role}',
-            style: const TextStyle(color: Color(0xFF5B6472), fontSize: 14),
+            style: const TextStyle(
+              color: Color(0xFF5B6472),
+              fontSize: 14,
+            ),
           ),
           const SizedBox(height: 24),
           ..._links.map(
@@ -106,7 +160,9 @@ class DashboardScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border.all(color: const Color(0xFFE2E5E9)),
+                    border: Border.all(
+                      color: const Color(0xFFE2E5E9),
+                    ),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -134,5 +190,6 @@ class DashboardScreen extends StatelessWidget {
 class _DashLink {
   final String label;
   final String key;
+
   _DashLink(this.label, this.key);
 }
