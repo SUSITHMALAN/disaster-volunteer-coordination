@@ -7,15 +7,16 @@ namespace DVC.Infrastructure.Persistence
     {
         public DvcDbContext CreateDbContext(string[] args)
         {
-            var optionsBuilder = new DbContextOptionsBuilder<DvcDbContext>();
-
-            var connectionString = Environment.GetEnvironmentVariable("DVC_DATABASE_CONNECTION");
+            var connectionString =
+                Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 
             if (string.IsNullOrWhiteSpace(connectionString))
             {
                 throw new InvalidOperationException(
-                    "DVC_DATABASE_CONNECTION environment variable is not configured.");
+                    "ConnectionStrings__DefaultConnection environment variable is not configured.");
             }
+
+            var optionsBuilder = new DbContextOptionsBuilder<DvcDbContext>();
 
             optionsBuilder.UseNpgsql(connectionString);
 

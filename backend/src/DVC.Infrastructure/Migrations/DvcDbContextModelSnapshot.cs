@@ -163,6 +163,64 @@ namespace DVC.Infrastructure.Migrations
                     b.ToTable("Incidents");
                 });
 
+            modelBuilder.Entity("DVC.Domain.Entities.IncidentResource", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("AvailableQuantity")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("IncidentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("NeededQuantity")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("ResourceName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("UsedQuantity")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IncidentId");
+
+                    b.ToTable("IncidentResources", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IncidentResources_AvailableQuantity_NonNegative", "\"AvailableQuantity\" >= 0");
+
+                            t.HasCheckConstraint("CK_IncidentResources_NeededQuantity_NonNegative", "\"NeededQuantity\" >= 0");
+
+                            t.HasCheckConstraint("CK_IncidentResources_UsedQuantity_NonNegative", "\"UsedQuantity\" >= 0");
+
+                            t.HasCheckConstraint("CK_IncidentResources_UsedQuantity_WithinAllocation", "\"UsedQuantity\" <= \"AvailableQuantity\"");
+                        });
+                });
+
             modelBuilder.Entity("DVC.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -290,6 +348,17 @@ namespace DVC.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("IncidentId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Incident");
+                });
+
+            modelBuilder.Entity("DVC.Domain.Entities.IncidentResource", b =>
+                {
+                    b.HasOne("DVC.Domain.Entities.Incident", "Incident")
+                        .WithMany()
+                        .HasForeignKey("IncidentId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Incident");

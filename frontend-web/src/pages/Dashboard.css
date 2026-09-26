@@ -1,7 +1,7 @@
 /* ── Dashboard Layout ── */
 .dashboard {
   padding: 48px 40px 80px;
-  max-width: 900px;
+  max-width: 1080px;
   margin: 0 auto;
   animation: fadeInUp 0.5s var(--ease-out) both;
 }
@@ -146,9 +146,18 @@
   border: 1px solid rgba(14, 165, 233, 0.3);
 }
 
+.dashboard__link-icon--matches {
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
 .dashboard__link-text {
   position: relative;
   z-index: 1;
+}
+
+.dashboard__map-section {
+  margin-bottom: 40px;
 }
 
 /* ── Logout ── */

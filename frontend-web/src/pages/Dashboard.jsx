@@ -1,5 +1,6 @@
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import IncidentsMap from "../components/IncidentsMap";
 import "./Dashboard.css";
 
 const ICON_MAP = {
@@ -7,7 +8,9 @@ const ICON_MAP = {
   "Incidents": { emoji: "⚠️", cls: "incidents" },
   "My profile & availability": { emoji: "👤", cls: "profile" },
   "Volunteers": { emoji: "🙋", cls: "volunteers" },
+  "Matches": { emoji: "🤝", cls: "matches" },
   "Approval queue": { emoji: "✅", cls: "approvals" },
+  "Assignments": { emoji: "📝", cls: "assignments" },
 };
 
 const ROLE_LINKS = {
@@ -17,18 +20,20 @@ const ROLE_LINKS = {
     { label: "Incidents", to: "/incidents" },
     { label: "Volunteers", to: "/volunteers" },
     { label: "Matches", to: "/matches" },
-    { label: "Approval queue", to: "/approvals" },
+    { label: "Assignments", to: "/assignments" },
   ],
   Admin: [
     { label: "Incidents", to: "/incidents" },
     { label: "Volunteers", to: "/volunteers" },
-    { label: "Approval queue", to: "/approvals" },
+    { label: "Matches", to: "/matches" },
+    { label: "Assignments", to: "/assignments" },
   ],
 };
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const links = ROLE_LINKS[user?.role] || [];
+  const isCoordinatorOrAdmin = user?.role === "Coordinator" || user?.role === "Admin";
 
   return (
     <div className="dashboard">
@@ -55,6 +60,13 @@ export default function Dashboard() {
           );
         })}
       </div>
+
+      {/* Coordinator & Admin Real-Time Geospatial Risk Map */}
+      {isCoordinatorOrAdmin && (
+        <div className="dashboard__map-section">
+          <IncidentsMap />
+        </div>
+      )}
 
       <button className="dashboard__logout" onClick={logout}>
         Sign out

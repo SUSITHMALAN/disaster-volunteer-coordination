@@ -1,0 +1,53 @@
+.dvc-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-surface, rgba(255, 255, 255, 0.05));
+  color: var(--color-text-muted, #94a3b8);
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+  padding: 8px 16px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  margin-bottom: 20px;
+  text-decoration: none;
+  user-select: none;
+}
+
+.dvc-back-btn:hover {
+  background: var(--color-surface-hover, rgba(255, 255, 255, 0.1));
+  color: var(--color-text, #f8fafc);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.dvc-back-btn:active {
+  transform: translateX(-1px) scale(0.98);
+}
+
+.dvc-back-btn__arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.dvc-back-btn:hover .dvc-back-btn__arrow {
+  transform: translateX(-2px);
+}
+
+.dvc-back-btn__label {
+  line-height: 1;
+}
+
+/* Variant for header / compact bars */
+.dvc-back-btn--compact {
+  padding: 6px 12px;
+  margin-bottom: 0;
+  font-size: 12px;
+}

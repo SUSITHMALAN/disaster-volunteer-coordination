@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import BackButton from "../components/BackButton";
 import "./AuthForm.css";
 
 const ROLES = ["Requester", "Volunteer", "Coordinator", "Admin"];
@@ -10,6 +11,7 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("Requester");
+  const [skillsInput, setSkillsInput] = useState("");
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const { register } = useAuth();
@@ -19,8 +21,12 @@ export default function Register() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
+    const parsedSkills = role === "Volunteer"
+      ? skillsInput.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean)
+      : [];
+
     try {
-      await register({ fullName, email, password, role, skills: [] });
+      await register({ fullName, email, password, role, skills: parsedSkills });
       navigate("/");
     } catch (err) {
       setError("Couldn't create your account. That email may already be registered.");
@@ -32,6 +38,7 @@ export default function Register() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
+        <BackButton to="/login" label="Back to Sign in" className="dvc-back-btn--compact" style={{ alignSelf: "flex-start", marginBottom: "8px" }} />
         <h1 className="auth-form__title">Join the mission</h1>
         <p className="auth-form__subtitle">Create your account to start coordinating</p>
 
@@ -77,6 +84,18 @@ export default function Register() {
             ))}
           </select>
         </label>
+
+        {role === "Volunteer" && (
+          <label className="auth-form__label">
+            Your Skills (optional, comma-separated)
+            <input
+              type="text"
+              value={skillsInput}
+              onChange={(e) => setSkillsInput(e.target.value)}
+              placeholder="e.g. first-aid, driving, cpr, boat-operation"
+            />
+          </label>
+        )}
 
         {error && <p className="auth-form__error">{error}</p>}
 

@@ -16,6 +16,7 @@ namespace DVC.Infrastructure.Persistence
 
         public DbSet<VolunteerMatch> VolunteerMatches => Set<VolunteerMatch>();
 
+        public DbSet<IncidentResource> IncidentResources => Set<IncidentResource>();
         public DbSet<Assignment> Assignments => Set<Assignment>();
 
         public DbSet<Dispatch> Dispatches => Set<Dispatch>();
@@ -92,6 +93,52 @@ namespace DVC.Infrastructure.Persistence
 
                 entity.Property(u => u.AvailabilityEndUtc)
                     .IsRequired(false);
+            });
+
+            // Incident resource configuration
+            modelBuilder.Entity<IncidentResource>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+
+                entity.ToTable("IncidentResources", table =>
+                {
+                    table.HasCheckConstraint("CK_IncidentResources_AvailableQuantity_NonNegative",
+                        "\"AvailableQuantity\" >= 0");
+                    table.HasCheckConstraint("CK_IncidentResources_NeededQuantity_NonNegative",
+                        "\"NeededQuantity\" >= 0");
+                    table.HasCheckConstraint("CK_IncidentResources_UsedQuantity_NonNegative",
+                        "\"UsedQuantity\" >= 0");
+                    table.HasCheckConstraint("CK_IncidentResources_UsedQuantity_WithinAllocation",
+                        "\"UsedQuantity\" <= \"AvailableQuantity\"");
+                });
+
+                entity.Property(r => r.ResourceName)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(r => r.Category)
+                    .HasConversion<string>()
+                    .HasMaxLength(50);
+
+                entity.Property(r => r.Unit)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(r => r.AvailableQuantity).HasPrecision(18, 2);
+                entity.Property(r => r.NeededQuantity).HasPrecision(18, 2);
+                entity.Property(r => r.UsedQuantity).HasPrecision(18, 2);
+
+                entity.Ignore(r => r.HasShortage);
+                entity.Ignore(r => r.ShortageQuantity);
+                entity.Ignore(r => r.RemainingQuantity);
+
+                entity.HasOne(r => r.Incident)
+                    .WithMany()
+                    .HasForeignKey(r => r.IncidentId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(r => r.IncidentId);
             });
 
             // Volunteer match configuration
