@@ -112,14 +112,18 @@ class _AssignedTasksScreenState extends State<AssignedTasksScreen> {
               itemBuilder: (context, index) {
                 return _AssignmentCard(
                   assignment: assignments[index],
-                  onTap: () {
-                    Navigator.of(context).push(
+                  onTap: () async {
+                    await Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => AssignmentStatusScreen(
                           assignment: assignments[index],
                         ),
                       ),
                     );
+
+                    if (mounted) {
+                      setState(_loadAssignments);
+                    }
                   },
                 );
               },
