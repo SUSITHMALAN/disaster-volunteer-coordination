@@ -8,6 +8,7 @@ import 'resources_screen.dart';
 import 'resource_reports_screen.dart';
 import 'report_incident_screen.dart';
 import 'incidents_screen.dart';
+import 'assigned_tasks_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final AppUser user;
@@ -17,7 +18,10 @@ class DashboardScreen extends StatelessWidget {
   List<_DashLink> get _links {
     switch (user.role) {
       case 'Volunteer':
-        return [_DashLink('My profile & availability', 'volunteers')];
+        return [
+          _DashLink('My assigned tasks', 'assigned_tasks'),
+          _DashLink('My profile & availability', 'volunteers'),
+        ];
       case 'Coordinator':
       case 'Admin':
         return [
@@ -57,6 +61,13 @@ class DashboardScreen extends StatelessWidget {
           MaterialPageRoute(builder: (_) => const ReportIncidentScreen()),
         );
         break;
+      case 'assigned_tasks':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => AssignedTasksScreen(user: user),
+          ),
+        );
+        break;  
       default:
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('Not built yet')));
