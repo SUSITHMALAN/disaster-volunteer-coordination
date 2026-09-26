@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/assignment.dart';
 import '../models/user.dart';
+import 'assignment_status_screen.dart';
 import '../services/assignment_service.dart';
 
 class AssignedTasksScreen extends StatefulWidget {
@@ -111,6 +112,15 @@ class _AssignedTasksScreenState extends State<AssignedTasksScreen> {
               itemBuilder: (context, index) {
                 return _AssignmentCard(
                   assignment: assignments[index],
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => AssignmentStatusScreen(
+                          assignment: assignments[index],
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -123,66 +133,77 @@ class _AssignedTasksScreenState extends State<AssignedTasksScreen> {
 
 class _AssignmentCard extends StatelessWidget {
   final Assignment assignment;
+  final VoidCallback onTap;
 
   const _AssignmentCard({
     required this.assignment,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(
-          color: Color(0xFFE2E5E9),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(
+            color: Color(0xFFE2E5E9),
+          ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.assignment_outlined,
-                  color: Color(0xFF344054),
-                ),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: Text(
-                    'Assignment',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1B2430),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.assignment_outlined,
+                    color: Color(0xFF344054),
+                  ),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'Assignment',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1B2430),
+                      ),
                     ),
                   ),
+                  _StatusChip(
+                    status: assignment.status,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _InfoRow(
+                label: 'Assignment ID',
+                value: assignment.id,
+              ),
+              _InfoRow(
+                label: 'Incident ID',
+                value: assignment.incidentId,
+              ),
+              _InfoRow(
+                label: 'Estimated duration',
+                value:
+                    '${assignment.estimatedDurationMinutes} minutes',
+              ),
+              _InfoRow(
+                label: 'Assigned',
+                value: _formatDateTime(
+                  assignment.assignedAtUtc,
                 ),
-                _StatusChip(status: assignment.status),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _InfoRow(
-              label: 'Assignment ID',
-              value: assignment.id,
-            ),
-            _InfoRow(
-              label: 'Incident ID',
-              value: assignment.incidentId,
-            ),
-            _InfoRow(
-              label: 'Estimated duration',
-              value: '${assignment.estimatedDurationMinutes} minutes',
-            ),
-            _InfoRow(
-              label: 'Assigned',
-              value: _formatDateTime(assignment.assignedAtUtc),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -191,9 +212,11 @@ class _AssignmentCard extends StatelessWidget {
   String _formatDateTime(DateTime dateTime) {
     final local = dateTime.toLocal();
 
-    String twoDigits(int value) => value.toString().padLeft(2, '0');
+    String twoDigits(int value) =>
+        value.toString().padLeft(2, '0');
 
-    return '${local.year}-${twoDigits(local.month)}-${twoDigits(local.day)} '
+    return '${local.year}-${twoDigits(local.month)}-'
+        '${twoDigits(local.day)} '
         '${twoDigits(local.hour)}:${twoDigits(local.minute)}';
   }
 }
