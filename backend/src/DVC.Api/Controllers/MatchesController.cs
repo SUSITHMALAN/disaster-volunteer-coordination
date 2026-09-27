@@ -30,7 +30,7 @@ namespace DVC.Api.Controllers
                     IncidentId = m.IncidentId,
                     VolunteerId = m.VolunteerId,
                     VolunteerName = m.Volunteer!.FullName,
-                    Score = m.Score,
+                    Score = m.Score > 1.0 ? m.Score / 100.0 : m.Score,
                     Rationale = m.Rationale,
                     Status = m.Status.ToString()
                 })
@@ -52,11 +52,13 @@ namespace DVC.Api.Controllers
             if (volunteer is null || volunteer.Role != UserRole.Volunteer)
                 return NotFound("Volunteer not found.");
 
+            var scoreNormalized = request.Score > 1.0 ? request.Score / 100.0 : request.Score;
+
             var match = new VolunteerMatch
             {
                 IncidentId = request.IncidentId,
                 VolunteerId = request.VolunteerId,
-                Score = request.Score,
+                Score = scoreNormalized,
                 Rationale = request.Rationale
             };
 

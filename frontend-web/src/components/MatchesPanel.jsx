@@ -111,7 +111,16 @@ export default function MatchesPanel({ incidentId }) {
 
           <div className="match-row__right">
             <div className="match-row__score">
-              {(match.score * 100).toFixed(0)}%
+              {Math.min(
+                Math.round(
+                  typeof match.score === "number"
+                    ? match.score > 1
+                      ? match.score
+                      : match.score * 100
+                    : 0
+                ),
+                100
+              )}%
             </div>
 
             <span
