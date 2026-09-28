@@ -1,20 +1,11 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
 
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiClient {
   static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:5030';
-    }
-    if (Platform.isAndroid) {
-      // 10.0.2.2 is the special alias Android emulators use to reach the host machine
-      return 'http://10.0.2.2:5030';
-    }
-    return 'http://localhost:5030';
+    return 'https://disaster-volunteer-coordination-api.onrender.com';
   }
 
   static Future<String?> _getToken() async {

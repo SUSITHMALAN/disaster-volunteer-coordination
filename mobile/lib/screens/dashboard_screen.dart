@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../models/assignment.dart';
-import '../services/assignment_service.dart';
-import '../services/assignments_service.dart';
+import '../models/user.dart';
 import '../services/auth_service.dart';
 import 'assigned_tasks_screen.dart';
+import 'assignments_screen.dart';
 import 'incidents_screen.dart';
 import 'login_screen.dart';
 import 'matches_screen.dart';
@@ -48,13 +47,8 @@ class DashboardScreen extends StatelessWidget {
         );
         break;
       case 'assignments':
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => user.role == 'Volunteer'
-                ? AssignmentsScreen(volunteerId: user.userId)
-                : const AssignmentsScreen(),
-          ),
-        );
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => const AssignmentsScreen()));
         break;
       case 'assigned_tasks':
         Navigator.of(context).push(
