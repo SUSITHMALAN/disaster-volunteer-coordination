@@ -154,6 +154,24 @@ class OrchestrationTests(unittest.TestCase):
                 execute.assert_not_called()
                 backend.persist_dispatch.assert_not_called()
 
+    def test_needs_revision_never_reaches_approval_or_execution(self):
+        backend = Mock()
+        with patch("graph.orchestration.create_dispatch") as execute:
+            _, _, result = self._start(
+                {
+                    "validation_verdict": "needs_revision",
+                    "validation_passed": False,
+                    "validation_is_stub": False,
+                },
+                backend,
+            )
+
+            self.assertNotIn("__interrupt__", result)
+            self.assertNotIn("dispatch_plan", result)
+            self.assertEqual(result["status"], "pending_validation")
+            execute.assert_not_called()
+            backend.persist_dispatch.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
