@@ -8,6 +8,8 @@ import MatchesPage from "./pages/MatchesPage.jsx";
 import IncidentsPage from "./pages/IncidentsPage";
 import ReportIncidentPage from "./pages/ReportIncidentPage";
 import AssignmentsPage from "./pages/AssignmentsPage";
+import ResourcesPage from "./pages/ResourcesPage";
+import ResourceReportsPage from "./pages/ResourceReportsPage";
 import "./App.css";
 
 function ProtectedRoute({ children, allowedRoles }) {
@@ -99,12 +101,23 @@ function NavigationHeader() {
                 >
                   Matches
                 </Link>
-
                 <Link
                   to="/assignments"
                   className={`app-header__nav-link ${location.pathname === "/assignments" ? "app-header__nav-link--active" : ""}`}
                 >
                   Assignments
+                </Link>
+                <Link
+                  to="/resources"
+                  className={`app-header__nav-link ${location.pathname === "/resources" ? "app-header__nav-link--active" : ""}`}
+                >
+                  Resources
+                </Link>
+                <Link
+                  to="/reports"
+                  className={`app-header__nav-link ${location.pathname === "/reports" ? "app-header__nav-link--active" : ""}`}
+                >
+                  Reports
                 </Link>
               </>
             )}
@@ -169,6 +182,22 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/incidents"
+        element={
+          <ProtectedRoute allowedRoles={["Coordinator", "Admin"]}>
+            <IncidentsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/incidents/new"
+        element={
+          <ProtectedRoute allowedRoles={["Requester", "Coordinator", "Admin"]}>
+            <ReportIncidentPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/matches"
         element={
           <ProtectedRoute allowedRoles={["Coordinator", "Admin"]}>
@@ -185,10 +214,18 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/volunteers"
+        path="/resources"
         element={
-          <ProtectedRoute>
-            <VolunteersPage />
+          <ProtectedRoute allowedRoles={["Coordinator", "Admin"]}>
+            <ResourcesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute allowedRoles={["Coordinator", "Admin"]}>
+            <ResourceReportsPage />
           </ProtectedRoute>
         }
       />
@@ -200,15 +237,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/incidents/new"
-        element={
-          <ProtectedRoute allowedRoles={["Requester"]}>
-            <ReportIncidentPage />
-          </ProtectedRoute>
-        }
-      />
-      {/* Fallback to Dashboard for any other route */}
+      {/* Fallback to Dashboard for any unknown route */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -1,21 +1,28 @@
 import 'package:flutter/material.dart';
-import '../models/assignment.dart';
-import '../services/assignment_service.dart';
+
+import '../services/assignments_service.dart';
 
 class AssignmentsScreen extends StatefulWidget {
-  final String volunteerId;
-
-  const AssignmentsScreen({
-    super.key,
-    required this.volunteerId,
-  });
+  const AssignmentsScreen({super.key});
 
   @override
   State<AssignmentsScreen> createState() => _AssignmentsScreenState();
 }
 
 class _AssignmentsScreenState extends State<AssignmentsScreen> {
-  late Future<List<Assignment>> _assignmentsFuture;
+  List<VolunteerAssignment> _assignments = [];
+  bool _loading = true;
+  String? _error;
+  String _selectedStatus = 'All';
+
+  final List<String> _statuses = [
+    'All',
+    'Assigned',
+    'Dispatched',
+    'InProgress',
+    'Completed',
+    'Cancelled',
+  ];
 
   @override
   void initState() {
@@ -23,344 +30,181 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
     _loadAssignments();
   }
 
-  void _loadAssignments() {
-    _assignmentsFuture =
-        AssignmentService.getMyAssignments(widget.volunteerId);
-  }
-
-  Future<void> _refresh() async {
-    setState(_loadAssignments);
-    await _assignmentsFuture;
-  }
-
-  List<AssignmentStatus> _availableStatuses(AssignmentStatus current) {
-    switch (current) {
-      case AssignmentStatus.assigned:
-        return [
-          AssignmentStatus.dispatched,
-          AssignmentStatus.cancelled,
-        ];
-
-      case AssignmentStatus.dispatched:
-        return [
-          AssignmentStatus.inProgress,
-          AssignmentStatus.cancelled,
-        ];
-
-      case AssignmentStatus.inProgress:
-        return [
-          AssignmentStatus.completed,
-          AssignmentStatus.cancelled,
-        ];
-
-      case AssignmentStatus.completed:
-      case AssignmentStatus.cancelled:
-        return [];
-    }
-  }
-
-  Future<void> _updateStatus(
-    Assignment assignment,
-    AssignmentStatus newStatus,
-  ) async {
+  Future<void> _loadAssignments() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
-      await AssignmentService.updateStatus(
-        assignment.id,
-        newStatus,
-      );
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Task status updated to ${_statusLabel(newStatus)}.',
-          ),
-        ),
-      );
-
-      setState(_loadAssignments);
+      final list = await AssignmentsService.getAssignmentHistory();
+      if (mounted) {
+        setState(() {
+          _assignments = list;
+          _loading = false;
+        });
+      }
     } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to update task status: $e'),
-        ),
-      );
+      if (mounted) {
+        setState(() {
+          _error = '$e';
+          _loading = false;
+        });
+      }
     }
   }
 
-  String _statusLabel(AssignmentStatus status) {
-    switch (status) {
-      case AssignmentStatus.assigned:
-        return 'Assigned';
-      case AssignmentStatus.dispatched:
-        return 'Dispatched';
-      case AssignmentStatus.inProgress:
-        return 'In Progress';
-      case AssignmentStatus.completed:
-        return 'Completed';
-      case AssignmentStatus.cancelled:
-        return 'Cancelled';
-    }
-  }
-
-  Color _statusColor(AssignmentStatus status) {
-    switch (status) {
-      case AssignmentStatus.assigned:
-        return Colors.orange;
-      case AssignmentStatus.dispatched:
-        return Colors.blue;
-      case AssignmentStatus.inProgress:
-        return Colors.indigo;
-      case AssignmentStatus.completed:
-        return Colors.green;
-      case AssignmentStatus.cancelled:
-        return Colors.red;
+  Future<void> _updateStatus(String id, String newStatus) async {
+    try {
+      await AssignmentsService.updateAssignmentStatus(id, newStatus);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Status updated to $newStatus')),
+        );
+      }
+      _loadAssignments();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update status: $e')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final filtered = _assignments.where((a) {
+      if (_selectedStatus == 'All') return true;
+      return a.status == _selectedStatus;
+    }).toList();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Assigned Tasks'),
+        title: const Text('Volunteer Assignments'),
         backgroundColor: const Color(0xFF14181F),
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loading ? null : _loadAssignments,
+          ),
+        ],
       ),
-      body: FutureBuilder<List<Assignment>>(
-        future: _assignmentsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Unable to load assigned tasks.',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${snapshot.error}',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(_loadAssignments);
-                      },
-                      child: const Text('Retry'),
-                    ),
-                  ],
+      body: RefreshIndicator(
+        onRefresh: _loadAssignments,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            DropdownButtonFormField<String>(
+              initialValue: _selectedStatus,
+              decoration: const InputDecoration(
+                labelText: 'Filter Status',
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              items: _statuses.map((s) {
+                return DropdownMenuItem<String>(
+                  value: s,
+                  child: Text(s),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) setState(() => _selectedStatus = val);
+              },
+            ),
+            const SizedBox(height: 16),
+            if (_loading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: CircularProgressIndicator(),
                 ),
-              ),
-            );
-          }
-
-          final assignments = snapshot.data ?? [];
-
-          if (assignments.isEmpty) {
-            return RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView(
-                children: const [
-                  SizedBox(height: 180),
-                  Center(
-                    child: Text(
-                      'No assigned tasks yet.',
-                      style: TextStyle(
-                        fontSize: 17,
-                        color: Color(0xFF5B6472),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: _refresh,
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: assignments.length,
-              itemBuilder: (context, index) {
-                final assignment = assignments[index];
-                final nextStatuses =
-                    _availableStatuses(assignment.status);
-
+              )
+            else if (_error != null)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(_error!, style: const TextStyle(color: Colors.red)),
+                ),
+              )
+            else if (filtered.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(
+                  child: Text('No assignments match this filter.'),
+                ),
+              )
+            else
+              ...filtered.map((item) {
                 return Card(
-                  margin: const EdgeInsets.only(bottom: 14),
-                  elevation: 1,
+                  margin: const EdgeInsets.only(bottom: 12),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Icon(
-                              Icons.assignment_outlined,
-                              color: Color(0xFFB8722E),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                'Task ${index + 1}',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                            Text(
+                              'Assignment #${item.id.length > 8 ? item.id.substring(0, 8) : item.id}',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: _statusColor(
-                                  assignment.status,
-                                ).withValues(alpha: 0.12),
-                                borderRadius:
-                                    BorderRadius.circular(20),
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                _statusLabel(assignment.status),
+                                item.status,
                                 style: TextStyle(
-                                  color: _statusColor(
-                                    assignment.status,
-                                  ),
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue.shade900,
                                 ),
                               ),
                             ),
                           ],
                         ),
-
-                        const Divider(height: 24),
-
-                        _InfoRow(
-                          label: 'Incident',
-                          value: assignment.incidentId,
-                        ),
-
                         const SizedBox(height: 8),
-
-                        _InfoRow(
-                          label: 'Assignment',
-                          value: assignment.id,
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        _InfoRow(
-                          label: 'Estimated duration',
-                          value:
-                              '${assignment.estimatedDurationMinutes} minutes',
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        if (nextStatuses.isNotEmpty)
-                          SizedBox(
-                            width: double.infinity,
-                            child: DropdownButtonFormField<
-                                AssignmentStatus>(
-                              initialValue: null,
-                              decoration: const InputDecoration(
-                                labelText: 'Update status',
-                                border: OutlineInputBorder(),
+                        Text('Incident ID: ${item.incidentId}'),
+                        Text('Volunteer ID: ${item.volunteerId}'),
+                        Text('Duration: ${item.estimatedDurationMinutes} mins'),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            if (item.status == 'Assigned')
+                              TextButton(
+                                onPressed: () => _updateStatus(item.id, 'Dispatched'),
+                                child: const Text('Dispatch'),
                               ),
-                              items: nextStatuses.map((status) {
-                                return DropdownMenuItem<
-                                    AssignmentStatus>(
-                                  value: status,
-                                  child: Text(
-                                    _statusLabel(status),
-                                  ),
-                                );
-                              }).toList(),
-                              onChanged: (status) {
-                                if (status != null) {
-                                  _updateStatus(
-                                    assignment,
-                                    status,
-                                  );
-                                }
-                              },
-                            ),
-                          )
-                        else
-                          Text(
-                            assignment.status ==
-                                    AssignmentStatus.completed
-                                ? 'Task completed.'
-                                : 'Task cancelled.',
-                            style: const TextStyle(
-                              color: Color(0xFF5B6472),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                            if (item.status == 'Dispatched')
+                              TextButton(
+                                onPressed: () => _updateStatus(item.id, 'InProgress'),
+                                child: const Text('Start Work'),
+                              ),
+                            if (item.status == 'InProgress')
+                              TextButton(
+                                onPressed: () => _updateStatus(item.id, 'Completed'),
+                                child: const Text('Mark Complete'),
+                              ),
+                            if (['Assigned', 'Dispatched', 'InProgress'].contains(item.status))
+                              TextButton(
+                                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                onPressed: () => _updateStatus(item.id, 'Cancelled'),
+                                child: const Text('Cancel'),
+                              ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
                 );
-              },
-            ),
-          );
-        },
+              }),
+          ],
+        ),
       ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _InfoRow({
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 145,
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF5B6472),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(
-              color: Color(0xFF1B2430),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

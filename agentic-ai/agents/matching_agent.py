@@ -103,8 +103,19 @@ def create_match(incident_id: str, volunteer_id: str, score: float, rationale: s
         return {"volunteerId": volunteer_id, "score": score, "rationale": rationale}
 
 
-def run_matching(incident_id: str, required_skills: list[str], zone: str | None, top_n: int = 3) -> dict:
-    """Full matching pipeline: fetch candidates, score, rank, persist top N matches."""
+def run_matching(
+    incident_id: str,
+    required_skills: list[str],
+    zone: str | None,
+    top_n: int | None = None,
+) -> dict:
+    """Full matching pipeline: fetch candidates, score, rank, persist matches.
+
+    By default (top_n=None) EVERY scored candidate is persisted as a match, so the
+    Coordinator sees the full ranked list with each volunteer's match percentage —
+    not just a single top pick. Pass an explicit top_n to still cap how many
+    matches get persisted (e.g. for a very large candidate pool).
+    """
     candidates = fetch_candidates(required_skills)
 
     if not candidates:
@@ -112,10 +123,10 @@ def run_matching(incident_id: str, required_skills: list[str], zone: str | None,
 
     scored = [score_candidate(c, required_skills, zone) for c in candidates]
     scored.sort(key=lambda s: s["score"], reverse=True)
-    top_matches = scored[:top_n]
+    matches_to_persist = scored if top_n is None else scored[:top_n]
 
     matched_ids = []
-    for m in top_matches:
+    for m in matches_to_persist:
         rationale = generate_rationale(m)
         result = create_match(incident_id, m["candidate"]["id"], m["score"], rationale)
         matched_ids.append(result["volunteerId"])

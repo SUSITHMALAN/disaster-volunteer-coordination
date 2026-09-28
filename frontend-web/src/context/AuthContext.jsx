@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from "react";
+/* eslint-disable react/only-export-components */
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { login as loginApi, register as registerApi } from "../api/auth";
 
 const AuthContext = createContext(null);
@@ -19,6 +20,22 @@ export function AuthProvider({ children }) {
     setUser(userData);
   }
 
+  const logout = useCallback(function logout() {
+    localStorage.removeItem("dvc_token");
+    localStorage.removeItem("dvc_user");
+    setUser(null);
+  }, []);
+
+  // When the API client gets a 401 (expired/missing token), it fires this
+  // event so we can clear React state and let ProtectedRoute redirect to /login.
+  useEffect(() => {
+    function handleUnauthorized() {
+      setUser(null);
+    }
+    window.addEventListener("dvc:unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("dvc:unauthorized", handleUnauthorized);
+  }, []);
+
   async function login(email, password) {
     const response = await loginApi(email, password);
     persist(response);
@@ -27,12 +44,6 @@ export function AuthProvider({ children }) {
   async function register(fields) {
     const response = await registerApi(fields);
     persist(response);
-  }
-
-  function logout() {
-    localStorage.removeItem("dvc_token");
-    localStorage.removeItem("dvc_user");
-    setUser(null);
   }
 
   return (

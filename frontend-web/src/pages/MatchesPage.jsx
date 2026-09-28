@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import MatchesPanel from "../components/MatchesPanel";
 import BackButton from "../components/BackButton";
@@ -6,17 +6,16 @@ import "./MatchesPage.css";
 
 export default function MatchesPage() {
   const [searchParams] = useSearchParams();
-  const initialId = searchParams.get("incidentId") || "";
-  const [incidentId, setIncidentId] = useState(initialId);
-  const [submittedId, setSubmittedId] = useState(initialId);
+  const qId = searchParams.get("incidentId") || "";
+  const [incidentId, setIncidentId] = useState(qId);
+  const [submittedId, setSubmittedId] = useState(qId);
+  const [prevQId, setPrevQId] = useState(qId);
 
-  useEffect(() => {
-    const qId = searchParams.get("incidentId");
-    if (qId) {
-      setIncidentId(qId);
-      setSubmittedId(qId);
-    }
-  }, [searchParams]);
+  if (qId !== prevQId) {
+    setPrevQId(qId);
+    setIncidentId(qId);
+    setSubmittedId(qId);
+  }
 
   function handleSubmit(e) {
     e.preventDefault();

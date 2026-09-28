@@ -18,6 +18,8 @@ export async function apiFetch(path, options = {}) {
     if (response.status === 401) {
       localStorage.removeItem("dvc_token");
       localStorage.removeItem("dvc_user");
+      // Notify the app so AuthContext can force a logout and redirect to /login
+      window.dispatchEvent(new CustomEvent("dvc:unauthorized"));
     }
     const text = await response.text();
     throw new Error(text || `Request failed: ${response.status}`);

@@ -155,9 +155,14 @@ class TestCreateMatch(unittest.TestCase):
 
 class TestRunMatching(unittest.TestCase):
 
+    @patch("agents.matching_agent.fetch_candidates", return_value=[])
+    def test_empty_candidates_returns_empty_lists(self, _):
+        result = run_matching("inc-1", ["first-aid"], zone=None)
+        self.assertEqual(result, {"candidate_volunteers": [], "matched_volunteer_ids": []})
+
     @patch("agents.matching_agent.create_match")
     @patch("agents.matching_agent.fetch_candidates")
-    def test_returns_top_3_by_default(self, mock_fetch, mock_create):
+    def test_returns_all_candidates_by_default(self, mock_fetch, mock_create):
         volunteers = [
             make_volunteer(id=f"vol-{i}", skills=["first-aid"]) for i in range(5)
         ]
@@ -166,25 +171,22 @@ class TestRunMatching(unittest.TestCase):
 
         result = run_matching("inc-1", ["first-aid"], zone=None)
 
-        self.assertEqual(len(result["matched_volunteer_ids"]), 3)
+        self.assertEqual(len(result["matched_volunteer_ids"]), 5)
         self.assertEqual(len(result["candidate_volunteers"]), 5)
-
-    @patch("agents.matching_agent.fetch_candidates", return_value=[])
-    def test_empty_candidates_returns_empty_lists(self, _):
-        result = run_matching("inc-1", ["first-aid"], zone=None)
-        self.assertEqual(result, {"candidate_volunteers": [], "matched_volunteer_ids": []})
 
     @patch("agents.matching_agent.create_match")
     @patch("agents.matching_agent.fetch_candidates")
-    def test_higher_skill_match_ranked_first(self, mock_fetch, mock_create):
-        low_match = make_volunteer(id="low", skills=["cooking"])
-        high_match = make_volunteer(id="high", skills=["first-aid", "boat"])
-        mock_fetch.return_value = [low_match, high_match]
+    def test_explicit_top_n_still_limits_persisted_matches(self, mock_fetch, mock_create):
+        volunteers = [
+            make_volunteer(id=f"vol-{i}", skills=["first-aid"]) for i in range(5)
+        ]
+        mock_fetch.return_value = volunteers
         mock_create.side_effect = lambda inc, vid, sc, rat: {"volunteerId": vid}
 
-        result = run_matching("inc-1", ["first-aid", "boat"], zone=None, top_n=1)
-        self.assertEqual(result["matched_volunteer_ids"], ["high"])
+        result = run_matching("inc-1", ["first-aid"], zone=None, top_n=3)
 
+        self.assertEqual(len(result["matched_volunteer_ids"]), 3)
+        self.assertEqual(len(result["candidate_volunteers"]), 5)
 
 if __name__ == "__main__":
     unittest.main()
