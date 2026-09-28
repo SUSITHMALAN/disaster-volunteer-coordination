@@ -96,6 +96,7 @@ builder.Services.AddScoped<IIncidentService, IncidentService>();
 builder.Services.AddScoped<IResourceService, ResourceService>();
 builder.Services.AddScoped<IReportingService, ReportingService>();
 builder.Services.AddScoped<IAssignmentService, AssignmentService>();
+builder.Services.AddScoped<IDispatchService, DispatchService>();
 
 // Typed HttpClient for the FastAPI agentic-AI bridge
 var agentBaseUrl =
