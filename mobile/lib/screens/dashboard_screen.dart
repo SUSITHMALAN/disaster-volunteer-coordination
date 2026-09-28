@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../models/user.dart';
+import '../models/assignment.dart';
+import '../services/assignment_service.dart';
+import '../services/assignments_service.dart';
 import '../services/auth_service.dart';
-import 'login_screen.dart';
-import 'volunteers_screen.dart';
-import 'resources_screen.dart';
-import 'resource_reports_screen.dart';
-import 'report_incident_screen.dart';
+import 'assigned_tasks_screen.dart';
 import 'incidents_screen.dart';
+import 'login_screen.dart';
 import 'matches_screen.dart';
-import 'assignments_screen.dart';
+import 'report_incident_screen.dart';
+import 'resource_reports_screen.dart';
+import 'resources_screen.dart';
+import 'volunteers_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final AppUser user;
@@ -19,7 +21,10 @@ class DashboardScreen extends StatelessWidget {
   List<_DashLink> get _links {
     switch (user.role) {
       case 'Volunteer':
-        return [_DashLink('My profile & availability', 'volunteers')];
+        return [
+          _DashLink('My assigned tasks', 'assigned_tasks'),
+          _DashLink('My profile & availability', 'volunteers'),
+        ];
       case 'Coordinator':
       case 'Admin':
         return [
@@ -30,7 +35,7 @@ class DashboardScreen extends StatelessWidget {
           _DashLink('Resources & supplies', 'resources'),
           _DashLink('Resource reports', 'resource_reports'),
         ];
-      default: // Requester
+      default:
         return [_DashLink('Report an incident', 'incidents_new')];
     }
   }
@@ -44,13 +49,22 @@ class DashboardScreen extends StatelessWidget {
         break;
       case 'assignments':
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const AssignmentsScreen()),
+          MaterialPageRoute(
+            builder: (_) => user.role == 'Volunteer'
+                ? AssignmentsScreen(volunteerId: user.userId)
+                : const AssignmentsScreen(),
+          ),
+        );
+        break;
+      case 'assigned_tasks':
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => AssignedTasksScreen(user: user)),
         );
         break;
       case 'resources':
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => ResourcesScreen(user: user)));
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => ResourcesScreen(user: user)),
+        );
         break;
       case 'resource_reports':
         Navigator.of(context).push(
@@ -58,8 +72,9 @@ class DashboardScreen extends StatelessWidget {
         );
         break;
       case 'volunteers':
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => const VolunteersScreen()));
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const VolunteersScreen()),
+        );
         break;
       case 'incidents':
         Navigator.of(context).push(
@@ -148,5 +163,6 @@ class DashboardScreen extends StatelessWidget {
 class _DashLink {
   final String label;
   final String key;
+
   _DashLink(this.label, this.key);
 }
