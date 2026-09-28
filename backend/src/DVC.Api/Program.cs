@@ -52,9 +52,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:5173",
-                "http://localhost:8080")
+        var configuredOrigins = builder.Configuration["Frontend:AllowedOrigins"];
+        var origins = string.IsNullOrWhiteSpace(configuredOrigins)
+            ? new[] { "http://localhost:5173", "http://localhost:8080" }
+            : configuredOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        policy.WithOrigins(origins)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -72,19 +75,19 @@ if (string.IsNullOrWhiteSpace(rawConn))
 if (rawConn.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase) ||
     rawConn.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase))
 {
-    var uri = new Uri(rawConn);
-    var userInfo = uri.UserInfo.Split(':');
-
-    var user = Uri.UnescapeDataString(userInfo[0]);
-
-    var pass = userInfo.Length > 1
-        ? Uri.UnescapeDataString(userInfo[1])
-        : "";
-
-    var db = uri.AbsolutePath.TrimStart('/');
-
-    rawConn =
-        $"Host={uri.Host};Port={uri.Port};Database={db};Username={user};Password={pass};";
+    try
+    {
+        var uri = new Uri(rawConn);
+        var userInfo = uri.UserInfo.Split(':');
+        var user = Uri.UnescapeDataString(userInfo[0]);
+        var pass = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+        var db = uri.AbsolutePath.TrimStart('/');
+        rawConn = $"Host={uri.Host};Port={uri.Port};Database={db};Username={user};Password={pass};";
+    }
+    catch
+    {
+        throw new InvalidOperationException("ConnectionStrings:DefaultConnection is not a valid connection string.");
+    }
 }
 
 builder.Services.AddDbContext<DvcDbContext>(options =>
