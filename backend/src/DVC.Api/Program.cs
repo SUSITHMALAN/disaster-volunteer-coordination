@@ -16,6 +16,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(
             new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
@@ -29,6 +30,7 @@ builder.Services.AddSwaggerGen(c =>
         In = ParameterLocation.Header,
         Description = "Enter: Bearer {your token}"
     });
+
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -40,71 +42,88 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });
 
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:8080")
+        policy.WithOrigins(
+                "http://localhost:5173",
+                "http://localhost:8080")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-var defaultConnStr = "Host=aws-0-ap-northeast-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.addzhynkeehvvloknyke;Password=5W3NtUhPJzb1eMlH;";
+// Database
 var rawConn = builder.Configuration.GetConnectionString("DefaultConnection");
+
 if (string.IsNullOrWhiteSpace(rawConn))
 {
-    rawConn = defaultConnStr;
+    throw new InvalidOperationException(
+        "ConnectionStrings:DefaultConnection is not configured.");
 }
-else if (rawConn.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase) || rawConn.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase))
+
+if (rawConn.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase) ||
+    rawConn.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase))
 {
-    try
-    {
-        var uri = new Uri(rawConn);
-        var userInfo = uri.UserInfo.Split(':');
-        var user = Uri.UnescapeDataString(userInfo[0]);
-        var pass = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
-        var db = uri.AbsolutePath.TrimStart('/');
-        rawConn = $"Host={uri.Host};Port={uri.Port};Database={db};Username={user};Password={pass};";
-    }
-    catch
-    {
-        rawConn = defaultConnStr;
-    }
+    var uri = new Uri(rawConn);
+    var userInfo = uri.UserInfo.Split(':');
+
+    var user = Uri.UnescapeDataString(userInfo[0]);
+
+    var pass = userInfo.Length > 1
+        ? Uri.UnescapeDataString(userInfo[1])
+        : "";
+
+    var db = uri.AbsolutePath.TrimStart('/');
+
+    rawConn =
+        $"Host={uri.Host};Port={uri.Port};Database={db};Username={user};Password={pass};";
 }
 
 builder.Services.AddDbContext<DvcDbContext>(options =>
     options.UseNpgsql(rawConn));
 
+// Application Services
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IIncidentService, IncidentService>();
 builder.Services.AddScoped<IResourceService, ResourceService>();
 builder.Services.AddScoped<IReportingService, ReportingService>();
 builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 
-// Typed HttpClient for the FastAPI agentic-AI bridge.
-var agentBaseUrl = builder.Configuration["AgentService:BaseUrl"] ?? "http://localhost:8000";
+// Typed HttpClient for the FastAPI agentic-AI bridge
+var agentBaseUrl =
+    builder.Configuration["AgentService:BaseUrl"]
+    ?? "http://localhost:8000";
+
 builder.Services.AddHttpClient<IAgentWorkflowService, AgentWorkflowService>(client =>
 {
     client.BaseAddress = new Uri(agentBaseUrl);
-    client.Timeout = TimeSpan.FromSeconds(120); // LangGraph invocations can take a while
+    client.Timeout = TimeSpan.FromSeconds(120);
 });
 
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"];
+
 if (string.IsNullOrWhiteSpace(jwtKey))
 {
-    jwtKey = "DvcSuperSecretKeyForDisasterVolunteerCoordinationSystem2026!";
+    throw new InvalidOperationException(
+        "Jwt:Key is not configured.");
 }
+
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme =
+        JwtBearerDefaults.AuthenticationScheme;
+
+    options.DefaultChallengeScheme =
+        JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
@@ -114,9 +133,16 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "DvcApi",
-        ValidAudience = builder.Configuration["Jwt:Audience"] ?? "DvcClient",
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+
+        ValidIssuer =
+            builder.Configuration["Jwt:Issuer"] ?? "DvcApi",
+
+        ValidAudience =
+            builder.Configuration["Jwt:Audience"] ?? "DvcClient",
+
+        IssuerSigningKey =
+            new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtKey))
     };
 });
 
@@ -132,8 +158,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseCors("AllowFrontend");
-app.UseAuthentication();   // must come before UseAuthorization
+
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();
