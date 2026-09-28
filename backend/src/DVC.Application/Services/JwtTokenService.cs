@@ -28,9 +28,11 @@ namespace DVC.Application.Services
             };
 
             var keyStr = _config["Jwt:Key"];
+
             if (string.IsNullOrWhiteSpace(keyStr))
             {
-                keyStr = "DvcSuperSecretKeyForDisasterVolunteerCoordinationSystem2026!";
+                throw new InvalidOperationException(
+                    "Jwt:Key is not configured.");
             }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyStr));
