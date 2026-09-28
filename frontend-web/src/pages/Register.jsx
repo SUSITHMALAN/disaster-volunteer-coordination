@@ -28,7 +28,7 @@ export default function Register() {
     try {
       await register({ fullName, email, password, role, skills: parsedSkills });
       navigate("/");
-    } catch (err) {
+    } catch {
       setError("Couldn't create your account. That email may already be registered.");
     } finally {
       setSubmitting(false);

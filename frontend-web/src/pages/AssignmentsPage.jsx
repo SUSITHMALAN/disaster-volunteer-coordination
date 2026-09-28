@@ -96,8 +96,7 @@ export default function AssignmentsPage() {
     }
   }
 
-  async function loadAssignments() {
-    setLoading(true);
+  async function fetchAssignments() {
     setError("");
 
     try {
@@ -115,8 +114,25 @@ export default function AssignmentsPage() {
   }
 
   useEffect(() => {
-    loadAssignments();
+    (async () => {
+      setError("");
+      try {
+        const data = await getAssignmentHistory();
+        const assignmentData = data || [];
+        setAssignments(assignmentData);
+        await loadVolunteerCapacities(assignmentData);
+      } catch (err) {
+        setError(err.message || "Failed to load assignments.");
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
+
+  function handleRefresh() {
+    setLoading(true);
+    fetchAssignments();
+  }
 
   async function handleStatusUpdate(id, newStatus) {
     setUpdatingId(id);
@@ -182,7 +198,7 @@ export default function AssignmentsPage() {
         <button
           type="button"
           className="assignments-page__refresh"
-          onClick={loadAssignments}
+          onClick={handleRefresh}
           disabled={loading}
         >
           {loading ? "Refreshing..." : "Refresh"}

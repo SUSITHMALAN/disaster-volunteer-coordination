@@ -8,6 +8,8 @@ import 'resources_screen.dart';
 import 'resource_reports_screen.dart';
 import 'report_incident_screen.dart';
 import 'incidents_screen.dart';
+import 'matches_screen.dart';
+import 'assignments_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final AppUser user;
@@ -23,6 +25,8 @@ class DashboardScreen extends StatelessWidget {
         return [
           _DashLink('Volunteers', 'volunteers'),
           _DashLink('Incidents', 'incidents'),
+          _DashLink('AI Matches', 'matches'),
+          _DashLink('Assignments', 'assignments'),
           _DashLink('Resources & supplies', 'resources'),
           _DashLink('Resource reports', 'resource_reports'),
         ];
@@ -33,6 +37,16 @@ class DashboardScreen extends StatelessWidget {
 
   void _navigate(BuildContext context, String key) {
     switch (key) {
+      case 'matches':
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const MatchesScreen()),
+        );
+        break;
+      case 'assignments':
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const AssignmentsScreen()),
+        );
+        break;
       case 'resources':
         Navigator.of(
           context,

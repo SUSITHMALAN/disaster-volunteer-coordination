@@ -68,7 +68,7 @@ export default function VolunteerProfile() {
       setProfile((prev) => (prev ? { ...prev, isAvailable: nextVal } : prev));
       setSaveMessage(`Availability updated to: ${nextVal ? "Available" : "Unavailable"}`);
       setTimeout(() => setSaveMessage(null), 3000);
-    } catch (err) {
+    } catch {
       setIsAvailable(!nextVal); // Revert
       setError("Failed to update availability status.");
     }

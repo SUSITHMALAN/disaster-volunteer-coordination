@@ -45,3 +45,6 @@ uuid_utils==0.17.1
 uvicorn==0.53.0
 xxhash==4.0.1
 zstandard==0.25.0
+psycopg-pool>=3.2.0
+langgraph-checkpoint-postgres>=2.0.0
+

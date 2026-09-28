@@ -1,3 +1,4 @@
+/* eslint-disable react/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { login as loginApi, register as registerApi } from "../api/auth";
 

@@ -54,7 +54,7 @@ def validation_node(state: AgentState) -> dict:
         "requiredSkills": state.get("required_skills") or [],
         "estimatedDurationMinutes": state.get(
             "estimated_duration_minutes"
-        ),
+        ) or 120,
     }
 
     result = validate_candidates(
@@ -179,16 +179,18 @@ def route_after_validation(state: AgentState) -> str:
 def _make_checkpointer(db_url: str | None):
     if db_url:
         try:
-            from psycopg_pool import ConnectionPool
-            from langgraph.checkpoint.postgres import PostgresSaver
+            import importlib
 
-            pool = ConnectionPool(
+            psycopg_pool = importlib.import_module("psycopg_pool")
+            postgres_saver = importlib.import_module("langgraph.checkpoint.postgres")
+
+            pool = psycopg_pool.ConnectionPool(
                 conninfo=db_url,
                 max_size=10,
                 open=True,
                 kwargs={"autocommit": True},
             )
-            checkpointer = PostgresSaver(pool)
+            checkpointer = postgres_saver.PostgresSaver(pool)
             checkpointer.setup()
             logger.info("Checkpointer: PostgreSQL (pool max_size=10)")
             return checkpointer

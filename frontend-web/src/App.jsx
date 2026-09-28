@@ -8,6 +8,8 @@ import MatchesPage from "./pages/MatchesPage.jsx";
 import IncidentsPage from "./pages/IncidentsPage";
 import ReportIncidentPage from "./pages/ReportIncidentPage";
 import AssignmentsPage from "./pages/AssignmentsPage";
+import ResourcesPage from "./pages/ResourcesPage";
+import ResourceReportsPage from "./pages/ResourceReportsPage";
 import "./App.css";
 
 function ProtectedRoute({ children, allowedRoles }) {
@@ -99,12 +101,23 @@ function NavigationHeader() {
                 >
                   Matches
                 </Link>
-
                 <Link
                   to="/assignments"
                   className={`app-header__nav-link ${location.pathname === "/assignments" ? "app-header__nav-link--active" : ""}`}
                 >
                   Assignments
+                </Link>
+                <Link
+                  to="/resources"
+                  className={`app-header__nav-link ${location.pathname === "/resources" ? "app-header__nav-link--active" : ""}`}
+                >
+                  Resources
+                </Link>
+                <Link
+                  to="/reports"
+                  className={`app-header__nav-link ${location.pathname === "/reports" ? "app-header__nav-link--active" : ""}`}
+                >
+                  Reports
                 </Link>
               </>
             )}
@@ -197,6 +210,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["Coordinator", "Admin"]}>
             <AssignmentsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/resources"
+        element={
+          <ProtectedRoute allowedRoles={["Coordinator", "Admin"]}>
+            <ResourcesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute allowedRoles={["Coordinator", "Admin"]}>
+            <ResourceReportsPage />
           </ProtectedRoute>
         }
       />
