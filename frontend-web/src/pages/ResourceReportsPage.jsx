@@ -7,16 +7,93 @@ import {
   getVolunteerLoad,
   getIncidentStatistics,
 } from "../api/reports";
+
 import "./ResourceReportsPage.css";
 
 const CATEGORY_LABELS = {
-  0: "Medical",
-  1: "Food & Water",
-  2: "Shelter",
-  3: "Equipment",
-  4: "Personnel",
-  5: "Other",
+  0: "Water",
+  1: "First Aid",
+  2: "Food",
+  3: "Transport",
+  4: "Other",
+
+  Water: "Water",
+  FirstAid: "First Aid",
+  Food: "Food",
+  Transport: "Transport",
+  Other: "Other",
 };
+
+function getCategoryLabel(category) {
+  return CATEGORY_LABELS[category] || category || "Other";
+}
+
+function getResourceName(resource) {
+  return resource.resourceName || resource.itemName || "Unnamed Resource";
+}
+
+function getNeededQuantity(resource) {
+  return Number(
+    resource.totalNeeded ??
+      resource.neededQuantity ??
+      resource.quantityRequired ??
+      0,
+  );
+}
+
+function getAvailableQuantity(resource) {
+  return Number(
+    resource.totalAvailable ??
+      resource.availableQuantity ??
+      resource.quantityAvailable ??
+      0,
+  );
+}
+
+function getUsedQuantity(resource) {
+  return Number(resource.totalUsed ?? resource.usedQuantity ?? 0);
+}
+
+function getShortageQuantity(resource) {
+  if (resource.totalShortage != null) {
+    return Number(resource.totalShortage);
+  }
+
+  if (resource.shortageQuantity != null) {
+    return Number(resource.shortageQuantity);
+  }
+
+  return Math.max(
+    0,
+    getNeededQuantity(resource) - getAvailableQuantity(resource),
+  );
+}
+
+function shortenIncidentId(incidentId) {
+  if (!incidentId) {
+    return "Unknown";
+  }
+
+  return `...${incidentId.slice(-8)}`;
+}
+
+function groupResourcesByIncident(rows) {
+  const grouped = {};
+
+  rows.forEach((row) => {
+    if (!grouped[row.incidentId]) {
+      grouped[row.incidentId] = {
+        incidentId: row.incidentId,
+        incidentTitle: row.incidentTitle || "Unknown Incident",
+        resources: [],
+      };
+    }
+
+    grouped[row.incidentId].resources.push(row);
+  });
+
+  return Object.values(grouped);
+}
 
 export default function ResourceReportsPage() {
   const [summary, setSummary] = useState([]);
@@ -31,18 +108,22 @@ export default function ResourceReportsPage() {
 
   async function fetchReportData() {
     setError("");
+
     try {
-      const [sumData, shortData, incData, volLoadData, incStatsData] = await Promise.all([
-        getResourceSummary().catch(() => []),
-        getResourceShortages().catch(() => null),
-        getResourcesByIncident().catch(() => []),
-        getVolunteerLoad().catch(() => null),
-        getIncidentStatistics().catch(() => null),
-      ]);
+      const [sumData, shortData, incData, volLoadData, incStatsData] =
+        await Promise.all([
+          getResourceSummary().catch(() => []),
+          getResourceShortages().catch(() => null),
+          getResourcesByIncident().catch(() => []),
+          getVolunteerLoad().catch(() => null),
+          getIncidentStatistics().catch(() => null),
+        ]);
 
       setSummary(sumData || []);
       setShortages(shortData);
-      setByIncident(incData || []);
+
+      setByIncident(groupResourcesByIncident(incData || []));
+
       setVolunteerLoad(volLoadData);
       setIncidentStats(incStatsData);
     } catch (err) {
@@ -53,28 +134,7 @@ export default function ResourceReportsPage() {
   }
 
   useEffect(() => {
-    (async () => {
-      setError("");
-      try {
-        const [sumData, shortData, incData, volLoadData, incStatsData] = await Promise.all([
-          getResourceSummary().catch(() => []),
-          getResourceShortages().catch(() => null),
-          getResourcesByIncident().catch(() => []),
-          getVolunteerLoad().catch(() => null),
-          getIncidentStatistics().catch(() => null),
-        ]);
-
-        setSummary(sumData || []);
-        setShortages(shortData);
-        setByIncident(incData || []);
-        setVolunteerLoad(volLoadData);
-        setIncidentStats(incStatsData);
-      } catch (err) {
-        setError(err.message || "Failed to load reporting data.");
-      } finally {
-        setLoading(false);
-      }
-    })();
+    fetchReportData();
   }, []);
 
   function handleRefresh() {
@@ -82,15 +142,21 @@ export default function ResourceReportsPage() {
     fetchReportData();
   }
 
+  const shortageItems = shortages?.items || [];
+
   return (
     <div className="reports-page">
-
       <div className="reports-page__header">
         <div>
           <p className="reports-page__eyebrow">ANALYTICS & INTELLIGENCE</p>
-          <h1 className="reports-page__title">Resource & Coordination Reports</h1>
+
+          <h1 className="reports-page__title">
+            Resource & Coordination Reports
+          </h1>
+
           <p className="reports-page__subtitle">
-            System-wide statistics on supply shortages, volunteer load, and incident allocations.
+            System-wide statistics on supply shortages, volunteer load, and
+            incident allocations.
           </p>
         </div>
 
@@ -104,33 +170,49 @@ export default function ResourceReportsPage() {
         </button>
       </div>
 
-      {error && <div className="reports-page__error" role="alert">{error}</div>}
+      {error && (
+        <div className="reports-page__error" role="alert">
+          {error}
+        </div>
+      )}
 
       <div className="reports-tabs">
         <button
           type="button"
-          className={`tab-btn ${activeTab === "summary" ? "tab-btn--active" : ""}`}
+          className={`tab-btn ${
+            activeTab === "summary" ? "tab-btn--active" : ""
+          }`}
           onClick={() => setActiveTab("summary")}
         >
           Supply Summary
         </button>
+
         <button
           type="button"
-          className={`tab-btn ${activeTab === "shortages" ? "tab-btn--active" : ""}`}
+          className={`tab-btn ${
+            activeTab === "shortages" ? "tab-btn--active" : ""
+          }`}
           onClick={() => setActiveTab("shortages")}
         >
-          Critical Shortages ({shortages?.totalShortageCount || 0})
+          Critical Shortages (
+          {shortages?.totalShortageCount ?? shortageItems.length})
         </button>
+
         <button
           type="button"
-          className={`tab-btn ${activeTab === "incidents" ? "tab-btn--active" : ""}`}
+          className={`tab-btn ${
+            activeTab === "incidents" ? "tab-btn--active" : ""
+          }`}
           onClick={() => setActiveTab("incidents")}
         >
           By Incident
         </button>
+
         <button
           type="button"
-          className={`tab-btn ${activeTab === "workload" ? "tab-btn--active" : ""}`}
+          className={`tab-btn ${
+            activeTab === "workload" ? "tab-btn--active" : ""
+          }`}
           onClick={() => setActiveTab("workload")}
         >
           Volunteer & Incident Load
@@ -141,32 +223,63 @@ export default function ResourceReportsPage() {
         <div className="reports-page__state">Gathering system reports...</div>
       ) : (
         <div className="reports-content">
-          {/* TAB 1: SUMMARY */}
+          {/* Supply Summary */}
+
           {activeTab === "summary" && (
             <div className="tab-pane">
               <h2 className="pane-title">Category-wise Resource Allocation</h2>
+
               {summary.length === 0 ? (
                 <div className="empty-state">No summary data available.</div>
               ) : (
                 <div className="summary-grid">
-                  {summary.map((cat, idx) => (
-                    <div key={idx} className="summary-card">
+                  {summary.map((category, index) => (
+                    <div
+                      key={category.category ?? index}
+                      className="summary-card"
+                    >
                       <div className="summary-card__header">
-                        <h3>{CATEGORY_LABELS[cat.category] || `Category ${cat.category}`}</h3>
-                        <span className="summary-card__count">{cat.totalItems} Items</span>
+                        <h3>{getCategoryLabel(category.category)}</h3>
+
+                        <span className="summary-card__count">
+                          {category.totalItems ?? category.resourceCount ?? 0}{" "}
+                          Items
+                        </span>
                       </div>
+
                       <div className="summary-card__metrics">
                         <div>
-                          <span>Required</span>
-                          <strong>{cat.totalRequired}</strong>
+                          <span>Needed</span>
+
+                          <strong>
+                            {category.totalRequired ??
+                              category.totalNeeded ??
+                              0}
+                          </strong>
                         </div>
+
                         <div>
                           <span>Available</span>
-                          <strong>{cat.totalAvailable}</strong>
+
+                          <strong>{category.totalAvailable ?? 0}</strong>
                         </div>
-                        <div className={cat.totalShortage > 0 ? "text-danger" : ""}>
+
+                        <div>
+                          <span>Used</span>
+
+                          <strong>{category.totalUsed ?? 0}</strong>
+                        </div>
+
+                        <div
+                          className={
+                            Number(category.totalShortage) > 0
+                              ? "text-danger"
+                              : ""
+                          }
+                        >
                           <span>Shortage</span>
-                          <strong>{cat.totalShortage}</strong>
+
+                          <strong>{category.totalShortage ?? 0}</strong>
                         </div>
                       </div>
                     </div>
@@ -176,42 +289,51 @@ export default function ResourceReportsPage() {
             </div>
           )}
 
-          {/* TAB 2: CRITICAL SHORTAGES */}
+          {/* Critical Shortages */}
+
           {activeTab === "shortages" && (
             <div className="tab-pane">
               <h2 className="pane-title">Active Resource Shortage Alerts</h2>
-              {!shortages || !shortages.items || shortages.items.length === 0 ? (
+
+              {shortageItems.length === 0 ? (
                 <div className="empty-state empty-state--success">
-                  🎉 No critical resource shortages reported!
+                  No active resource shortages reported.
                 </div>
               ) : (
                 <div className="shortage-table-wrapper">
                   <table className="report-table">
                     <thead>
                       <tr>
-                        <th>Item Name</th>
+                        <th>Resource</th>
                         <th>Category</th>
-                        <th>Required</th>
+                        <th>Needed</th>
                         <th>Available</th>
+                        <th>Used</th>
                         <th>Shortage</th>
                         <th>Unit</th>
-                        <th>Priority</th>
                       </tr>
                     </thead>
+
                     <tbody>
-                      {shortages.items.map((item) => (
-                        <tr key={item.resourceId}>
-                          <td><strong>{item.itemName}</strong></td>
-                          <td>{CATEGORY_LABELS[item.category] || item.category}</td>
-                          <td>{item.quantityRequired}</td>
-                          <td>{item.quantityAvailable}</td>
-                          <td className="text-danger"><strong>+{item.shortageQuantity}</strong></td>
-                          <td>{item.unit}</td>
+                      {shortageItems.map((item, index) => (
+                        <tr key={item.id || item.resourceId || index}>
                           <td>
-                            <span className={`badge priority-${item.priority}`}>
-                              {item.priority === 3 ? "Critical" : item.priority === 2 ? "High" : "Medium"}
-                            </span>
+                            <strong>{getResourceName(item)}</strong>
                           </td>
+
+                          <td>{getCategoryLabel(item.category)}</td>
+
+                          <td>{getNeededQuantity(item)}</td>
+
+                          <td>{getAvailableQuantity(item)}</td>
+
+                          <td>{getUsedQuantity(item)}</td>
+
+                          <td className="text-danger">
+                            <strong>+{getShortageQuantity(item)}</strong>
+                          </td>
+
+                          <td>{item.unit || "units"}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -221,58 +343,219 @@ export default function ResourceReportsPage() {
             </div>
           )}
 
-          {/* TAB 3: BY INCIDENT */}
+          {/* Resources By Incident */}
+
           {activeTab === "incidents" && (
             <div className="tab-pane">
-              <h2 className="pane-title">Incident Resource Allocation Breakdown</h2>
+              <div className="incident-section-heading">
+                <div>
+                  <h2 className="pane-title">
+                    Incident Resource Allocation Breakdown
+                  </h2>
+
+                  <p>
+                    Review resource availability, usage and shortages for each
+                    incident.
+                  </p>
+                </div>
+
+                <span className="incident-total">
+                  {byIncident.length} incidents
+                </span>
+              </div>
+
               {byIncident.length === 0 ? (
-                <div className="empty-state">No incident breakdowns reported.</div>
+                <div className="empty-state">
+                  No incident breakdowns reported.
+                </div>
               ) : (
                 <div className="incident-breakdown-list">
-                  {byIncident.map((inc) => (
-                    <div key={inc.incidentId} className="incident-report-card">
+                  {byIncident.map((incident) => (
+                    <section
+                      key={incident.incidentId}
+                      className="incident-report-card"
+                    >
                       <div className="incident-report-card__header">
-                        <h3>Incident #{inc.incidentId.substring(0, 8)}</h3>
-                        <span>{inc.resources?.length || 0} Resource lines</span>
+                        <div className="incident-report-card__identity">
+                          <span className="incident-report-card__label">
+                            INCIDENT
+                          </span>
+
+                          <h3>{incident.incidentTitle}</h3>
+
+                          <span className="incident-report-card__id">
+                            ID {shortenIncidentId(incident.incidentId)}
+                          </span>
+                        </div>
+
+                        <div className="incident-report-card__count">
+                          <strong>{incident.resources.length}</strong>
+
+                          <span>
+                            {incident.resources.length === 1
+                              ? "Resource"
+                              : "Resources"}
+                          </span>
+                        </div>
                       </div>
-                      <div className="incident-report-card__body">
-                        {inc.resources && inc.resources.map((res) => (
-                          <div key={res.id} className="resource-mini-row">
-                            <span>{res.itemName}</span>
-                            <span>{res.quantityAvailable} / {res.quantityRequired} {res.unit}</span>
-                          </div>
-                        ))}
+
+                      <div className="incident-resource-table">
+                        <div className="incident-resource-table__header">
+                          <span>Resource</span>
+                          <span>Needed</span>
+                          <span>Available</span>
+                          <span>Used</span>
+                          <span>Status</span>
+                        </div>
+
+                        <div className="incident-report-card__body">
+                          {incident.resources.map((resource, index) => {
+                            const needed = getNeededQuantity(resource);
+
+                            const available = getAvailableQuantity(resource);
+
+                            const used = getUsedQuantity(resource);
+
+                            const shortage = getShortageQuantity(resource);
+
+                            const unit = resource.unit || "units";
+
+                            return (
+                              <div
+                                key={`${incident.incidentId}-${resource.resourceName}-${index}`}
+                                className="resource-report-row"
+                              >
+                                <div className="resource-report-row__resource">
+                                  <strong>{getResourceName(resource)}</strong>
+
+                                  <span className="resource-category">
+                                    {getCategoryLabel(resource.category)}
+                                  </span>
+                                </div>
+
+                                <div className="resource-report-row__metric">
+                                  <span className="mobile-label">Needed</span>
+
+                                  <strong>{needed}</strong>
+
+                                  <small>{unit}</small>
+                                </div>
+
+                                <div className="resource-report-row__metric">
+                                  <span className="mobile-label">
+                                    Available
+                                  </span>
+
+                                  <strong>{available}</strong>
+
+                                  <small>{unit}</small>
+                                </div>
+
+                                <div className="resource-report-row__metric">
+                                  <span className="mobile-label">Used</span>
+
+                                  <strong>{used}</strong>
+
+                                  <small>{unit}</small>
+                                </div>
+
+                                <div className="resource-report-row__status">
+                                  <span className="mobile-label">Status</span>
+
+                                  {shortage > 0 ? (
+                                    <span className="resource-status resource-status--shortage">
+                                      Shortage {shortage} {unit}
+                                    </span>
+                                  ) : (
+                                    <span className="resource-status resource-status--ok">
+                                      Sufficient
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
+                    </section>
                   ))}
                 </div>
               )}
             </div>
           )}
 
-          {/* TAB 4: VOLUNTEER & INCIDENT LOAD */}
+          {/* Volunteer & Incident Load */}
+
           {activeTab === "workload" && (
             <div className="tab-pane">
               <h2 className="pane-title">System Operational Metrics</h2>
+
               <div className="metrics-row">
                 {volunteerLoad && (
                   <div className="metric-box">
                     <h3>Volunteer Workforce Load</h3>
+
                     <ul>
-                      <li><span>Total Active Volunteers:</span> <strong>{volunteerLoad.totalVolunteers ?? "N/A"}</strong></li>
-                      <li><span>Assigned / On-Duty:</span> <strong>{volunteerLoad.assignedVolunteers ?? "N/A"}</strong></li>
-                      <li><span>Available Capacity:</span> <strong>{volunteerLoad.availableVolunteers ?? "N/A"}</strong></li>
+                      <li>
+                        <span>Total Active Volunteers:</span>
+
+                        <strong>
+                          {volunteerLoad.totalVolunteers ?? "N/A"}
+                        </strong>
+                      </li>
+
+                      <li>
+                        <span>Assigned / On-Duty:</span>
+
+                        <strong>
+                          {volunteerLoad.assignedVolunteers ?? "N/A"}
+                        </strong>
+                      </li>
+
+                      <li>
+                        <span>Available Capacity:</span>
+
+                        <strong>
+                          {volunteerLoad.availableVolunteers ?? "N/A"}
+                        </strong>
+                      </li>
                     </ul>
                   </div>
                 )}
+
                 {incidentStats && (
                   <div className="metric-box">
                     <h3>Incident Overview</h3>
+
                     <ul>
-                      <li><span>Total Incidents:</span> <strong>{incidentStats.totalIncidents ?? "N/A"}</strong></li>
-                      <li><span>Active / Open:</span> <strong>{incidentStats.activeIncidents ?? "N/A"}</strong></li>
-                      <li><span>Resolved / Closed:</span> <strong>{incidentStats.resolvedIncidents ?? "N/A"}</strong></li>
+                      <li>
+                        <span>Total Incidents:</span>
+
+                        <strong>{incidentStats.totalIncidents ?? "N/A"}</strong>
+                      </li>
+
+                      <li>
+                        <span>Active / Open:</span>
+
+                        <strong>
+                          {incidentStats.activeIncidents ?? "N/A"}
+                        </strong>
+                      </li>
+
+                      <li>
+                        <span>Resolved / Closed:</span>
+
+                        <strong>
+                          {incidentStats.resolvedIncidents ?? "N/A"}
+                        </strong>
+                      </li>
                     </ul>
+                  </div>
+                )}
+
+                {!volunteerLoad && !incidentStats && (
+                  <div className="empty-state">
+                    Operational metrics are not available.
                   </div>
                 )}
               </div>
