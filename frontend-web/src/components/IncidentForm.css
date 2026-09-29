@@ -123,3 +123,13 @@
     grid-template-columns: 1fr;
   }
 }
+
+.i-card__action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.i-card__action:disabled:hover {
+  transform: none;
+}

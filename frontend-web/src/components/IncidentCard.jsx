@@ -17,7 +17,12 @@ const SEVERITY_CLASS = {
   Critical: "i-card__severity--critical",
 };
 
-export default function IncidentCard({ incident, onAdvanceStatus, onCancel }) {
+export default function IncidentCard({
+  incident,
+  onAdvanceStatus,
+  onCancel,
+  isUpdating,
+}) {
   const nextStatus = NEXT_STATUS[incident.status];
 
   const canCancel =
@@ -67,8 +72,9 @@ export default function IncidentCard({ incident, onAdvanceStatus, onCancel }) {
             type="button"
             className="i-card__action i-card__action--advance"
             onClick={() => onAdvanceStatus(incident.id, nextStatus)}
+            disabled={isUpdating}
           >
-            Mark as {nextStatus}
+            {isUpdating ? "Updating..." : `Mark as ${nextStatus}`}
           </button>
         )}
 
@@ -77,8 +83,9 @@ export default function IncidentCard({ incident, onAdvanceStatus, onCancel }) {
             type="button"
             className="i-card__action i-card__action--cancel"
             onClick={() => onCancel(incident.id)}
+            disabled={isUpdating}
           >
-            Cancel
+            {isUpdating ? "Updating..." : "Cancel"}
           </button>
         )}
       </div>
