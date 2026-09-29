@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 
-import BackButton from "../components/BackButton";
-
 import {
   getResources,
   createResource,
@@ -247,7 +245,6 @@ export default function ResourcesPage() {
 
   return (
     <div className="resources-page">
-      <BackButton to="/" label="Back to Dashboard" />
 
       <div className="resources-page__header">
         <div>

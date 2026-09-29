@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import BackButton from "../components/BackButton";
+
 import {
   getResourceSummary,
   getResourceShortages,
@@ -84,7 +84,6 @@ export default function ResourceReportsPage() {
 
   return (
     <div className="reports-page">
-      <BackButton to="/" label="Back to Dashboard" />
 
       <div className="reports-page__header">
         <div>

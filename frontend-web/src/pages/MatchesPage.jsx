@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import MatchesPanel from "../components/MatchesPanel";
-import BackButton from "../components/BackButton";
 import { getIncidents } from "../api/incidents";
 
 import "./MatchesPage.css";
@@ -57,8 +56,7 @@ export default function MatchesPage() {
 
   return (
     <div className="matches-page">
-      <BackButton to="/" label="Back to Dashboard" />
-
+      
       <h1 className="matches-page__title">Volunteer Matches</h1>
 
       <p className="matches-page__subtitle">

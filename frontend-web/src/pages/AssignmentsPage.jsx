@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import BackButton from "../components/BackButton";
+
 import {
   getAssignmentHistory,
   getVolunteerCapacity,
@@ -180,7 +180,6 @@ export default function AssignmentsPage() {
 
   return (
     <div className="assignments-page">
-      <BackButton to="/" label="Back to Dashboard" />
 
       <div className="assignments-page__header">
         <div>
