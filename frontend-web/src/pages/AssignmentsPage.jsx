@@ -6,6 +6,8 @@ import {
   updateAssignmentStatus,
 } from "../api/assignments";
 
+import { getIncidents } from "../api/incidents";
+
 import "./AssignmentsPage.css";
 
 const STATUS_OPTIONS = [
@@ -15,6 +17,10 @@ const STATUS_OPTIONS = [
   "Completed",
   "Cancelled",
 ];
+
+const ACTIVE_STATUSES = ["Assigned", "Dispatched", "InProgress"];
+
+const HISTORY_STATUSES = ["Completed", "Cancelled"];
 
 const NEXT_STATUS = {
   Assigned: "Dispatched",
@@ -36,6 +42,14 @@ function formatDate(value) {
   }
 
   return new Date(value).toLocaleString();
+}
+
+function shortenId(value) {
+  if (!value) {
+    return "N/A";
+  }
+
+  return `${value.slice(0, 8)}...`;
 }
 
 function getNextAction(status) {
@@ -76,22 +90,27 @@ function getSuccessMessage(newStatus) {
 
 export default function AssignmentsPage() {
   const [assignments, setAssignments] = useState([]);
+  const [incidents, setIncidents] = useState([]);
 
   const [statusFilter, setStatusFilter] = useState("All");
-
   const [incidentFilter, setIncidentFilter] = useState("");
 
   const [loading, setLoading] = useState(true);
+  const [incidentsLoading, setIncidentsLoading] = useState(true);
 
   const [updatingId, setUpdatingId] = useState(null);
 
   const [error, setError] = useState("");
-
   const [success, setSuccess] = useState("");
 
   const [capacities, setCapacities] = useState({});
-
   const [capacityLoading, setCapacityLoading] = useState(false);
+
+  function getIncidentName(incidentId) {
+    const incident = incidents.find((item) => item.id === incidentId);
+
+    return incident?.title || "Unknown Incident";
+  }
 
   async function loadVolunteerCapacities(data) {
     const volunteerIds = [
@@ -131,7 +150,6 @@ export default function AssignmentsPage() {
 
     try {
       const data = await getAssignmentHistory();
-
       const assignmentData = data || [];
 
       setAssignments(assignmentData);
@@ -144,24 +162,24 @@ export default function AssignmentsPage() {
     }
   }
 
+  async function fetchIncidents() {
+    setIncidentsLoading(true);
+
+    try {
+      const data = await getIncidents();
+      setIncidents(data || []);
+    } catch (err) {
+      setError(err.message || "Failed to load incidents.");
+
+      setIncidents([]);
+    } finally {
+      setIncidentsLoading(false);
+    }
+  }
+
   useEffect(() => {
-    (async () => {
-      setError("");
-
-      try {
-        const data = await getAssignmentHistory();
-
-        const assignmentData = data || [];
-
-        setAssignments(assignmentData);
-
-        await loadVolunteerCapacities(assignmentData);
-      } catch (err) {
-        setError(err.message || "Failed to load assignments.");
-      } finally {
-        setLoading(false);
-      }
-    })();
+    fetchAssignments();
+    fetchIncidents();
   }, []);
 
   function handleRefresh() {
@@ -216,24 +234,41 @@ export default function AssignmentsPage() {
         statusFilter === "All" || assignment.status === statusFilter;
 
       const matchesIncident =
-        !incidentFilter ||
-        assignment.incidentId
-          ?.toLowerCase()
-          .includes(incidentFilter.trim().toLowerCase());
+        !incidentFilter || assignment.incidentId === incidentFilter;
 
       return matchesStatus && matchesIncident;
     });
   }, [assignments, statusFilter, incidentFilter]);
 
-  const groupedAssignments = useMemo(() => {
-    return STATUS_OPTIONS.reduce((groups, status) => {
-      groups[status] = filteredAssignments.filter(
+  const activeAssignments = useMemo(() => {
+    return filteredAssignments.filter((assignment) =>
+      ACTIVE_STATUSES.includes(assignment.status),
+    );
+  }, [filteredAssignments]);
+
+  const historyAssignments = useMemo(() => {
+    return filteredAssignments
+      .filter((assignment) => HISTORY_STATUSES.includes(assignment.status))
+      .sort((a, b) => new Date(b.assignedAtUtc) - new Date(a.assignedAtUtc));
+  }, [filteredAssignments]);
+
+  const groupedActiveAssignments = useMemo(() => {
+    return ACTIVE_STATUSES.reduce((groups, status) => {
+      groups[status] = activeAssignments.filter(
         (assignment) => assignment.status === status,
       );
 
       return groups;
     }, {});
-  }, [filteredAssignments]);
+  }, [activeAssignments]);
+
+  const completedCount = historyAssignments.filter(
+    (assignment) => assignment.status === "Completed",
+  ).length;
+
+  const cancelledCount = historyAssignments.filter(
+    (assignment) => assignment.status === "Cancelled",
+  ).length;
 
   return (
     <div className="assignments-page">
@@ -279,14 +314,23 @@ export default function AssignmentsPage() {
         </label>
 
         <label>
-          <span>Incident ID</span>
+          <span>Incident</span>
 
-          <input
-            type="text"
-            placeholder="Filter by incident ID"
+          <select
             value={incidentFilter}
             onChange={(event) => setIncidentFilter(event.target.value)}
-          />
+            disabled={incidentsLoading}
+          >
+            <option value="">
+              {incidentsLoading ? "Loading incidents..." : "All incidents"}
+            </option>
+
+            {incidents.map((incident) => (
+              <option key={incident.id} value={incident.id}>
+                {incident.title}
+              </option>
+            ))}
+          </select>
         </label>
       </div>
 
@@ -304,144 +348,230 @@ export default function AssignmentsPage() {
 
       {loading ? (
         <div className="assignments-page__state">Loading assignments...</div>
-      ) : filteredAssignments.length === 0 ? (
-        <div className="assignments-page__state">No assignments found.</div>
       ) : (
-        <div className="assignments-board">
-          {STATUS_OPTIONS.map((status) => {
-            const items = groupedAssignments[status];
+        <>
+          <section className="assignments-section">
+            <div className="assignments-section__header">
+              <div>
+                <p className="assignments-section__eyebrow">ACTIVE WORK</p>
 
-            return (
-              <section
-                key={status}
-                className={`assignment-column assignment-column--${status.toLowerCase()}`}
-              >
-                <div className="assignment-column__header">
-                  <div>
-                    <h2>{formatStatus(status)}</h2>
+                <h2>Active Assignments</h2>
+              </div>
 
-                    <span>{items.length} assignment(s)</span>
-                  </div>
-                </div>
+              <span className="assignments-section__count">
+                {activeAssignments.length} active
+              </span>
+            </div>
 
-                <div className="assignment-column__items">
-                  {items.length === 0 ? (
-                    <div className="assignment-column__empty">
-                      No assignments
+            <div className="assignments-board">
+              {ACTIVE_STATUSES.map((status) => {
+                const items = groupedActiveAssignments[status];
+
+                return (
+                  <section
+                    key={status}
+                    className={`assignment-column assignment-column--${status.toLowerCase()}`}
+                  >
+                    <div className="assignment-column__header">
+                      <div>
+                        <h2>{formatStatus(status)}</h2>
+
+                        <span>{items.length} assignment(s)</span>
+                      </div>
                     </div>
-                  ) : (
-                    items.map((assignment) => {
-                      const nextStatus = NEXT_STATUS[assignment.status];
 
-                      const nextAction = getNextAction(assignment.status);
+                    <div className="assignment-column__items">
+                      {items.length === 0 ? (
+                        <div className="assignment-column__empty">
+                          No assignments
+                        </div>
+                      ) : (
+                        items.map((assignment) => {
+                          const nextStatus = NEXT_STATUS[assignment.status];
 
-                      const capacity = capacities[assignment.volunteerId];
+                          const nextAction = getNextAction(assignment.status);
 
-                      return (
-                        <article
-                          key={assignment.id}
-                          className="assignment-card"
-                        >
-                          <div className="assignment-card__top">
-                            <span className="assignment-card__status">
-                              {formatStatus(assignment.status)}
-                            </span>
+                          const capacity = capacities[assignment.volunteerId];
 
-                            <span className="assignment-card__duration">
-                              {assignment.estimatedDurationMinutes} min
-                            </span>
-                          </div>
+                          return (
+                            <article
+                              key={assignment.id}
+                              className="assignment-card"
+                            >
+                              <div className="assignment-card__top">
+                                <span className="assignment-card__status">
+                                  {formatStatus(assignment.status)}
+                                </span>
 
-                          <h3 className="assignment-card__title">
-                            Volunteer Assignment
-                          </h3>
+                                <span className="assignment-card__duration">
+                                  {assignment.estimatedDurationMinutes} min
+                                </span>
+                              </div>
 
-                          <dl className="assignment-card__details">
-                            <div>
-                              <dt>Incident</dt>
+                              <h3 className="assignment-card__title">
+                                {getIncidentName(assignment.incidentId)}
+                              </h3>
 
-                              <dd>{assignment.incidentId}</dd>
-                            </div>
+                              <dl className="assignment-card__details">
+                                <div>
+                                  <dt>Incident ID</dt>
 
-                            <div>
-                              <dt>Volunteer</dt>
+                                  <dd>{shortenId(assignment.incidentId)}</dd>
+                                </div>
 
-                              <dd>{assignment.volunteerId}</dd>
-                            </div>
+                                <div>
+                                  <dt>Volunteer</dt>
 
-                            <div>
-                              <dt>Capacity</dt>
+                                  <dd>{shortenId(assignment.volunteerId)}</dd>
+                                </div>
 
-                              <dd>
-                                {capacityLoading && !capacity
-                                  ? "Loading..."
-                                  : capacity
-                                    ? `${capacity.activeAssignments} / ${capacity.maximumActiveAssignments} active`
-                                    : "Unavailable"}
-                              </dd>
-                            </div>
+                                <div>
+                                  <dt>Capacity</dt>
 
-                            <div>
-                              <dt>Availability</dt>
+                                  <dd>
+                                    {capacityLoading && !capacity
+                                      ? "Loading..."
+                                      : capacity
+                                        ? `${capacity.activeAssignments} / ${capacity.maximumActiveAssignments} active`
+                                        : "Unavailable"}
+                                  </dd>
+                                </div>
 
-                              <dd>
-                                {capacity
-                                  ? capacity.isAvailable
-                                    ? "Available"
-                                    : "Unavailable"
-                                  : "Unknown"}
-                              </dd>
-                            </div>
+                                <div>
+                                  <dt>Availability</dt>
 
-                            <div>
-                              <dt>Assigned</dt>
+                                  <dd>
+                                    {capacity
+                                      ? capacity.isAvailable
+                                        ? "Available"
+                                        : "Unavailable"
+                                      : "Unknown"}
+                                  </dd>
+                                </div>
 
-                              <dd>{formatDate(assignment.assignedAtUtc)}</dd>
-                            </div>
-                          </dl>
+                                <div>
+                                  <dt>Assigned</dt>
 
-                          <div className="assignment-card__actions">
-                            {nextStatus && (
-                              <button
-                                type="button"
-                                className="assignment-card__action"
-                                disabled={updatingId === assignment.id}
-                                onClick={() =>
-                                  handleStatusUpdate(assignment.id, nextStatus)
-                                }
-                              >
-                                {updatingId === assignment.id
-                                  ? "Updating..."
-                                  : nextAction}
-                              </button>
-                            )}
+                                  <dd>
+                                    {formatDate(assignment.assignedAtUtc)}
+                                  </dd>
+                                </div>
+                              </dl>
 
-                            {["Assigned", "Dispatched", "InProgress"].includes(
-                              assignment.status,
-                            ) && (
-                              <button
-                                type="button"
-                                className="assignment-card__cancel"
-                                disabled={updatingId === assignment.id}
-                                onClick={() =>
-                                  handleCancelAssignment(assignment)
-                                }
-                              >
-                                {updatingId === assignment.id
-                                  ? "Updating..."
-                                  : "Cancel"}
-                              </button>
-                            )}
-                          </div>
-                        </article>
-                      );
-                    })
-                  )}
-                </div>
-              </section>
-            );
-          })}
-        </div>
+                              <div className="assignment-card__actions">
+                                {nextStatus && (
+                                  <button
+                                    type="button"
+                                    className="assignment-card__action"
+                                    disabled={updatingId === assignment.id}
+                                    onClick={() =>
+                                      handleStatusUpdate(
+                                        assignment.id,
+                                        nextStatus,
+                                      )
+                                    }
+                                  >
+                                    {updatingId === assignment.id
+                                      ? "Updating..."
+                                      : nextAction}
+                                  </button>
+                                )}
+
+                                <button
+                                  type="button"
+                                  className="assignment-card__cancel"
+                                  disabled={updatingId === assignment.id}
+                                  onClick={() =>
+                                    handleCancelAssignment(assignment)
+                                  }
+                                >
+                                  {updatingId === assignment.id
+                                    ? "Updating..."
+                                    : "Cancel"}
+                                </button>
+                              </div>
+                            </article>
+                          );
+                        })
+                      )}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="assignment-history">
+            <div className="assignment-history__header">
+              <div>
+                <p className="assignments-section__eyebrow">RECORDS</p>
+
+                <h2>Assignment History</h2>
+
+                <p>Completed and cancelled assignments.</p>
+              </div>
+
+              <div className="assignment-history__stats">
+                <span className="history-count history-count--completed">
+                  Completed {completedCount}
+                </span>
+
+                <span className="history-count history-count--cancelled">
+                  Cancelled {cancelledCount}
+                </span>
+              </div>
+            </div>
+
+            {historyAssignments.length === 0 ? (
+              <div className="assignment-history__empty">
+                No completed or cancelled assignments.
+              </div>
+            ) : (
+              <div className="assignment-history__list">
+                {historyAssignments.map((assignment) => (
+                  <article
+                    key={assignment.id}
+                    className="assignment-history__row"
+                  >
+                    <div className="history-main">
+                      <span
+                        className={`history-status history-status--${assignment.status.toLowerCase()}`}
+                      >
+                        {formatStatus(assignment.status)}
+                      </span>
+
+                      <div>
+                        <h3>{getIncidentName(assignment.incidentId)}</h3>
+
+                        <span className="history-id">
+                          Incident {shortenId(assignment.incidentId)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="history-detail">
+                      <span>Volunteer</span>
+
+                      <strong>{shortenId(assignment.volunteerId)}</strong>
+                    </div>
+
+                    <div className="history-detail">
+                      <span>Duration</span>
+
+                      <strong>{assignment.estimatedDurationMinutes} min</strong>
+                    </div>
+
+                    <div className="history-detail">
+                      <span>Assigned</span>
+
+                      <strong>{formatDate(assignment.assignedAtUtc)}</strong>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </>
       )}
     </div>
   );
