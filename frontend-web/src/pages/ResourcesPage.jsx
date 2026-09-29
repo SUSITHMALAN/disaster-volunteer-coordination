@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 
 import BackButton from "../components/BackButton";
+
 import {
   getResources,
   createResource,
   updateResource,
   deleteResource,
 } from "../api/resources";
+
+import { getIncidents } from "../api/incidents";
 
 import "./ResourcesPage.css";
 
@@ -15,12 +18,29 @@ const CATEGORY_NAMES = {
   1: "First Aid",
   2: "Food",
   3: "Transport",
-  4: "Other",
+  4: "Other / Custom",
 };
+
+const UNIT_OPTIONS = [
+  "units",
+  "boxes",
+  "bottles",
+  "liters",
+  "kilograms",
+  "packs",
+  "sets",
+  "pieces",
+  "bags",
+  "kits",
+];
 
 export default function ResourcesPage() {
   const [resources, setResources] = useState([]);
+  const [incidents, setIncidents] = useState([]);
+
   const [loading, setLoading] = useState(true);
+  const [incidentsLoading, setIncidentsLoading] = useState(false);
+
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingResource, setEditingResource] = useState(null);
@@ -29,6 +49,11 @@ export default function ResourcesPage() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [shortageFilter, setShortageFilter] = useState("");
   const [incidentFilter, setIncidentFilter] = useState("");
+
+  // Custom field states
+  const [unitType, setUnitType] = useState("units");
+  const [customUnit, setCustomUnit] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
 
   // Form states
   const [formData, setFormData] = useState({
@@ -50,8 +75,10 @@ export default function ResourcesPage() {
     try {
       const data = await getResources({
         category: categoryFilter !== "" ? Number(categoryFilter) : undefined,
+
         isShortage:
           shortageFilter !== "" ? shortageFilter === "true" : undefined,
+
         incidentId: incidentFilter || undefined,
       });
 
@@ -60,6 +87,20 @@ export default function ResourcesPage() {
       setError(err.message || "Failed to load resources.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchIncidents() {
+    setIncidentsLoading(true);
+
+    try {
+      const data = await getIncidents();
+      setIncidents(data || []);
+    } catch (err) {
+      console.error("Failed to load incidents:", err);
+      setIncidents([]);
+    } finally {
+      setIncidentsLoading(false);
     }
   }
 
@@ -86,12 +127,29 @@ export default function ResourcesPage() {
       unit: "units",
     });
 
+    setUnitType("units");
+    setCustomUnit("");
+    setCustomCategory("");
+
     setFormError("");
     setShowModal(true);
+
+    fetchIncidents();
   }
 
   function handleOpenEdit(resource) {
     setEditingResource(resource);
+
+    const currentUnit =
+      resource.unit && UNIT_OPTIONS.includes(resource.unit.toLowerCase())
+        ? resource.unit.toLowerCase()
+        : "custom";
+
+    setUnitType(currentUnit);
+
+    setCustomUnit(currentUnit === "custom" ? resource.unit || "" : "");
+
+    setCustomCategory("");
 
     setFormData({
       incidentId: resource.incidentId || "",
@@ -109,14 +167,31 @@ export default function ResourcesPage() {
 
   async function handleFormSubmit(e) {
     e.preventDefault();
+
     setFormSubmitting(true);
     setFormError("");
 
     try {
+      if (!formData.resourceName.trim()) {
+        throw new Error("Resource name is required.");
+      }
+
+      if (!formData.unit.trim()) {
+        throw new Error("Please select or enter a unit.");
+      }
+
+      if (
+        Number(formData.category) === 4 &&
+        !customCategory.trim() &&
+        !editingResource
+      ) {
+        throw new Error("Please enter a custom category name.");
+      }
+
       const payload = {
-        resourceName: formData.resourceName,
+        resourceName: formData.resourceName.trim(),
         category: Number(formData.category),
-        unit: formData.unit,
+        unit: formData.unit.trim(),
         availableQuantity: Number(formData.availableQuantity),
         neededQuantity: Number(formData.neededQuantity),
         usedQuantity: Number(formData.usedQuantity),
@@ -126,7 +201,9 @@ export default function ResourcesPage() {
         await updateResource(editingResource.id, payload);
       } else {
         if (!formData.incidentId) {
-          throw new Error("Incident ID is required to create a resource item.");
+          throw new Error(
+            "Please select an incident before creating the resource.",
+          );
         }
 
         await createResource({
@@ -246,7 +323,9 @@ export default function ResourcesPage() {
             onChange={(e) => setShortageFilter(e.target.value)}
           >
             <option value="">All Items</option>
+
             <option value="true">Shortages Only</option>
+
             <option value="false">Sufficient Only</option>
           </select>
         </label>
@@ -380,7 +459,6 @@ export default function ResourcesPage() {
         </div>
       )}
 
-      {/* Modal Dialog */}
       {showModal && (
         <div className="modal-backdrop">
           <div className="modal-content">
@@ -394,22 +472,46 @@ export default function ResourcesPage() {
               {formError && <div className="modal-error">{formError}</div>}
 
               {!editingResource && (
-                <label className="form-field">
-                  <span>Incident ID (GUID) *</span>
+                <>
+                  <label className="form-field">
+                    <span>Incident Name *</span>
 
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. 3fa85f64-5717-4562-b3fc-2c963f66afa6"
-                    value={formData.incidentId}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        incidentId: e.target.value,
-                      })
-                    }
-                  />
-                </label>
+                    <select
+                      required
+                      value={formData.incidentId}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          incidentId: e.target.value,
+                        })
+                      }
+                      disabled={incidentsLoading}
+                    >
+                      <option value="">
+                        {incidentsLoading
+                          ? "Loading incidents..."
+                          : "Select an incident"}
+                      </option>
+
+                      {incidents.map((incident) => (
+                        <option key={incident.id} value={incident.id}>
+                          {incident.title}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="form-field">
+                    <span>Incident ID</span>
+
+                    <input
+                      type="text"
+                      value={formData.incidentId}
+                      readOnly
+                      placeholder="Incident ID will appear here"
+                    />
+                  </label>
+                </>
               )}
 
               <label className="form-field">
@@ -434,12 +536,18 @@ export default function ResourcesPage() {
 
                 <select
                   value={formData.category}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const category = Number(e.target.value);
+
                     setFormData({
                       ...formData,
-                      category: Number(e.target.value),
-                    })
-                  }
+                      category,
+                    });
+
+                    if (category !== 4) {
+                      setCustomCategory("");
+                    }
+                  }}
                 >
                   {Object.entries(CATEGORY_NAMES).map(([val, name]) => (
                     <option key={val} value={val}>
@@ -448,6 +556,20 @@ export default function ResourcesPage() {
                   ))}
                 </select>
               </label>
+
+              {Number(formData.category) === 4 && (
+                <label className="form-field">
+                  <span>Custom Category *</span>
+
+                  <input
+                    type="text"
+                    required={!editingResource}
+                    placeholder="e.g. Shelter, Equipment, Clothing"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                  />
+                </label>
+              )}
 
               <div className="form-row">
                 <label className="form-field">
@@ -509,20 +631,63 @@ export default function ResourcesPage() {
                 <label className="form-field">
                   <span>Unit *</span>
 
+                  <select
+                    value={unitType}
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      setUnitType(value);
+
+                      if (value === "custom") {
+                        setCustomUnit("");
+
+                        setFormData({
+                          ...formData,
+                          unit: "",
+                        });
+                      } else {
+                        setCustomUnit("");
+
+                        setFormData({
+                          ...formData,
+                          unit: value,
+                        });
+                      }
+                    }}
+                  >
+                    {UNIT_OPTIONS.map((unit) => (
+                      <option key={unit} value={unit}>
+                        {unit.charAt(0).toUpperCase() + unit.slice(1)}
+                      </option>
+                    ))}
+
+                    <option value="custom">Custom...</option>
+                  </select>
+                </label>
+              </div>
+
+              {unitType === "custom" && (
+                <label className="form-field">
+                  <span>Custom Unit *</span>
+
                   <input
                     type="text"
                     required
-                    placeholder="e.g. boxes, liters, sets"
-                    value={formData.unit}
-                    onChange={(e) =>
+                    placeholder="e.g. cartons, tents, pairs"
+                    value={customUnit}
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      setCustomUnit(value);
+
                       setFormData({
                         ...formData,
-                        unit: e.target.value,
-                      })
-                    }
+                        unit: value,
+                      });
+                    }}
                   />
                 </label>
-              </div>
+              )}
 
               <div className="modal-actions">
                 <button
