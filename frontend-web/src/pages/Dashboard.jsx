@@ -4,79 +4,164 @@ import IncidentsMap from "../components/IncidentsMap";
 import "./Dashboard.css";
 
 const ICON_MAP = {
-  "Report an incident": { emoji: "🚨", cls: "incidents" },
-  "Incidents": { emoji: "⚠️", cls: "incidents" },
-  "My profile & availability": { emoji: "👤", cls: "profile" },
-  "Volunteers": { emoji: "🙋", cls: "volunteers" },
-  "Matches": { emoji: "🤝", cls: "matches" },
-  "Approval queue": { emoji: "✅", cls: "approvals" },
-  "Assignments": { emoji: "📝", cls: "assignments" },
-  "Resources & supplies": { emoji: "📦", cls: "incidents" },
-  "Resource reports": { emoji: "📊", cls: "matches" },
+  "Report an incident": {
+    emoji: "🚨",
+    cls: "incidents",
+  },
+  Incidents: {
+    emoji: "⚠️",
+    cls: "incidents",
+  },
+  "My profile & availability": {
+    emoji: "👤",
+    cls: "profile",
+  },
+  Volunteers: {
+    emoji: "🙋",
+    cls: "volunteers",
+  },
+  Matches: {
+    emoji: "🤝",
+    cls: "matches",
+  },
+  "Approval queue": {
+    emoji: "✅",
+    cls: "approvals",
+  },
+  Assignments: {
+    emoji: "📝",
+    cls: "assignments",
+  },
+  "Resources & supplies": {
+    emoji: "📦",
+    cls: "incidents",
+  },
+  "Resource reports": {
+    emoji: "📊",
+    cls: "matches",
+  },
 };
 
 const ROLE_LINKS = {
-  Requester: [{ label: "Report an incident", to: "/incidents/new" }],
-  Volunteer: [{ label: "My profile & availability", to: "/volunteers" }],
-  Coordinator: [
-    { label: "Incidents", to: "/incidents" },
-    { label: "Volunteers", to: "/volunteers" },
-    { label: "Matches", to: "/matches" },
-    { label: "Assignments", to: "/assignments" },
-    { label: "Resources & supplies", to: "/resources" },
-    { label: "Resource reports", to: "/reports" },
+  Requester: [
+    {
+      label: "Report an incident",
+      to: "/incidents/new",
+    },
   ],
+
+  Volunteer: [
+    {
+      label: "My profile & availability",
+      to: "/volunteers",
+    },
+  ],
+
+  Coordinator: [
+    {
+      label: "Incidents",
+      to: "/incidents",
+    },
+    {
+      label: "Volunteers",
+      to: "/volunteers",
+    },
+    {
+      label: "Matches",
+      to: "/matches",
+    },
+    {
+      label: "Assignments",
+      to: "/assignments",
+    },
+    {
+      label: "Resources & supplies",
+      to: "/resources",
+    },
+    {
+      label: "Resource reports",
+      to: "/reports",
+    },
+  ],
+
   Admin: [
-    { label: "Incidents", to: "/incidents" },
-    { label: "Volunteers", to: "/volunteers" },
-    { label: "Matches", to: "/matches" },
-    { label: "Assignments", to: "/assignments" },
-    { label: "Resources & supplies", to: "/resources" },
-    { label: "Resource reports", to: "/reports" },
+    {
+      label: "Incidents",
+      to: "/incidents",
+    },
+    {
+      label: "Volunteers",
+      to: "/volunteers",
+    },
+    {
+      label: "Matches",
+      to: "/matches",
+    },
+    {
+      label: "Assignments",
+      to: "/assignments",
+    },
+    {
+      label: "Resources & supplies",
+      to: "/resources",
+    },
+    {
+      label: "Resource reports",
+      to: "/reports",
+    },
   ],
 };
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+
   const links = ROLE_LINKS[user?.role] || [];
-  const isCoordinatorOrAdmin = user?.role === "Coordinator" || user?.role === "Admin";
+
+  const isCoordinatorOrAdmin =
+    user?.role === "Coordinator" || user?.role === "Admin";
 
   return (
     <div className="dashboard">
       <div className="dashboard__welcome">
         <p className="dashboard__greeting">Welcome back</p>
+
         <h1 className="dashboard__title">{user?.fullName}</h1>
+
         <p className="dashboard__role">
-          <span className="dashboard__role-dot"></span>
+          <span className="dashboard__role-dot" />
+
           {user?.role}
         </p>
       </div>
 
       <p className="dashboard__section-label">Quick actions</p>
+
       <div className="dashboard__links">
         {links.map((link) => {
-          const icon = ICON_MAP[link.label] || { emoji: "📋", cls: "incidents" };
+          const icon = ICON_MAP[link.label] || {
+            emoji: "📋",
+            cls: "incidents",
+          };
+
           return (
             <Link key={link.to} className="dashboard__link" to={link.to}>
-              <span className={`dashboard__link-icon dashboard__link-icon--${icon.cls}`}>
+              <span
+                className={`dashboard__link-icon dashboard__link-icon--${icon.cls}`}
+              >
                 {icon.emoji}
               </span>
+
               <span className="dashboard__link-text">{link.label}</span>
             </Link>
           );
         })}
       </div>
 
-      {/* Coordinator & Admin Real-Time Geospatial Risk Map */}
       {isCoordinatorOrAdmin && (
         <div className="dashboard__map-section">
           <IncidentsMap />
         </div>
       )}
-
-      <button className="dashboard__logout" onClick={logout}>
-        Sign out
-      </button>
     </div>
   );
 }
