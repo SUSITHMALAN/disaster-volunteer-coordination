@@ -1,6 +1,6 @@
 using DVC.Application.Services;
-using DVC.Infrastructure.Services;
 using DVC.Infrastructure.Persistence;
+using DVC.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,8 +9,9 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Services
-builder.Services.AddControllers()
+// Controllers
+builder.Services
+    .AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(
@@ -19,6 +20,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddEndpointsApiExplorer();
 
+// Swagger
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -52,19 +54,30 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        var configuredOrigins = builder.Configuration["Frontend:AllowedOrigins"];
-        var origins = string.IsNullOrWhiteSpace(configuredOrigins)
-            ? new[] { "http://localhost:5173", "http://localhost:8080" }
-            : configuredOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var configuredOrigins =
+            builder.Configuration["Frontend:AllowedOrigins"];
 
-        policy.WithOrigins(origins)
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        var origins = string.IsNullOrWhiteSpace(configuredOrigins)
+            ? new[]
+            {
+                "http://localhost:5173",
+                "http://localhost:8080"
+            }
+            : configuredOrigins.Split(
+                ',',
+                StringSplitOptions.RemoveEmptyEntries |
+                StringSplitOptions.TrimEntries);
+
+        policy
+            .WithOrigins(origins)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
 // Database
-var rawConn = builder.Configuration.GetConnectionString("DefaultConnection");
+var rawConn =
+    builder.Configuration.GetConnectionString("DefaultConnection");
 
 if (string.IsNullOrWhiteSpace(rawConn))
 {
@@ -72,48 +85,87 @@ if (string.IsNullOrWhiteSpace(rawConn))
         "ConnectionStrings:DefaultConnection is not configured.");
 }
 
-if (rawConn.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase) ||
-    rawConn.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase))
+// Convert Render/PostgreSQL URL format if necessary
+if (rawConn.StartsWith(
+        "postgresql://",
+        StringComparison.OrdinalIgnoreCase) ||
+    rawConn.StartsWith(
+        "postgres://",
+        StringComparison.OrdinalIgnoreCase))
 {
     try
     {
         var uri = new Uri(rawConn);
+
         var userInfo = uri.UserInfo.Split(':');
-        var user = Uri.UnescapeDataString(userInfo[0]);
-        var pass = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
-        var db = uri.AbsolutePath.TrimStart('/');
-        rawConn = $"Host={uri.Host};Port={uri.Port};Database={db};Username={user};Password={pass};";
+
+        var user =
+            Uri.UnescapeDataString(userInfo[0]);
+
+        var pass =
+            userInfo.Length > 1
+                ? Uri.UnescapeDataString(userInfo[1])
+                : "";
+
+        var database =
+            uri.AbsolutePath.TrimStart('/');
+
+        rawConn =
+            $"Host={uri.Host};" +
+            $"Port={uri.Port};" +
+            $"Database={database};" +
+            $"Username={user};" +
+            $"Password={pass};";
     }
     catch
     {
-        throw new InvalidOperationException("ConnectionStrings:DefaultConnection is not a valid connection string.");
+        throw new InvalidOperationException(
+            "ConnectionStrings:DefaultConnection is not a valid connection string.");
     }
 }
 
 builder.Services.AddDbContext<DvcDbContext>(options =>
     options.UseNpgsql(rawConn));
 
-// Application Services
+// Application services
 builder.Services.AddScoped<JwtTokenService>();
-builder.Services.AddScoped<IIncidentService, IncidentService>();
-builder.Services.AddScoped<IResourceService, ResourceService>();
-builder.Services.AddScoped<IReportingService, ReportingService>();
-builder.Services.AddScoped<IAssignmentService, AssignmentService>();
-builder.Services.AddScoped<IDispatchService, DispatchService>();
 
-// Typed HttpClient for the FastAPI agentic-AI bridge
+builder.Services.AddScoped<
+    IIncidentService,
+    IncidentService>();
+
+builder.Services.AddScoped<
+    IResourceService,
+    ResourceService>();
+
+builder.Services.AddScoped<
+    IReportingService,
+    ReportingService>();
+
+builder.Services.AddScoped<
+    IAssignmentService,
+    AssignmentService>();
+
+builder.Services.AddScoped<
+    IDispatchService,
+    DispatchService>();
+
+// FastAPI Agent Service
 var agentBaseUrl =
     builder.Configuration["AgentService:BaseUrl"]
     ?? "http://localhost:8000";
 
-builder.Services.AddHttpClient<IAgentWorkflowService, AgentWorkflowService>(client =>
+builder.Services.AddHttpClient<
+    IAgentWorkflowService,
+    AgentWorkflowService>(client =>
 {
     client.BaseAddress = new Uri(agentBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(120);
 });
 
-// JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"];
+// JWT
+var jwtKey =
+    builder.Configuration["Jwt:Key"];
 
 if (string.IsNullOrWhiteSpace(jwtKey))
 {
@@ -131,36 +183,40 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
+    options.TokenValidationParameters =
+        new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
 
-        ValidIssuer =
-            builder.Configuration["Jwt:Issuer"] ?? "DvcApi",
+            ValidIssuer =
+                builder.Configuration["Jwt:Issuer"]
+                ?? "DvcApi",
 
-        ValidAudience =
-            builder.Configuration["Jwt:Audience"] ?? "DvcClient",
+            ValidAudience =
+                builder.Configuration["Jwt:Audience"]
+                ?? "DvcClient",
 
-        IssuerSigningKey =
-            new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtKey))
-    };
+            IssuerSigningKey =
+                new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(jwtKey))
+        };
 });
 
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Pipeline
+// Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// Middleware
 app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend");
