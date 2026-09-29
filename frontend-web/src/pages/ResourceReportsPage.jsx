@@ -95,6 +95,41 @@ function groupResourcesByIncident(rows) {
   return Object.values(grouped);
 }
 
+function groupSummaryByCategory(rows) {
+  const grouped = {};
+
+  rows.forEach((row) => {
+    const category = row.category ?? "Other";
+
+    if (!grouped[category]) {
+      grouped[category] = {
+        category,
+        totalItems: 0,
+        totalNeeded: 0,
+        totalAvailable: 0,
+        totalUsed: 0,
+        totalShortage: 0,
+      };
+    }
+
+    grouped[category].totalItems += Number(
+      row.totalItems ?? row.resourceCount ?? 0,
+    );
+
+    grouped[category].totalNeeded += Number(
+      row.totalNeeded ?? row.totalRequired ?? 0,
+    );
+
+    grouped[category].totalAvailable += Number(row.totalAvailable ?? 0);
+
+    grouped[category].totalUsed += Number(row.totalUsed ?? 0);
+
+    grouped[category].totalShortage += Number(row.totalShortage ?? 0);
+  });
+
+  return Object.values(grouped);
+}
+
 export default function ResourceReportsPage() {
   const [summary, setSummary] = useState([]);
   const [shortages, setShortages] = useState(null);
@@ -119,7 +154,7 @@ export default function ResourceReportsPage() {
           getIncidentStatistics().catch(() => null),
         ]);
 
-      setSummary(sumData || []);
+      setSummary(groupSummaryByCategory(sumData || []));
       setShortages(shortData);
 
       setByIncident(groupResourcesByIncident(incData || []));
