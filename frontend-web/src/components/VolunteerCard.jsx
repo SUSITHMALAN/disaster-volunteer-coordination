@@ -1,6 +1,10 @@
 import "./VolunteerCard.css";
 
-export default function VolunteerCard({ volunteer, onToggleAvailability }) {
+export default function VolunteerCard({
+  volunteer,
+  onToggleAvailability,
+  isUpdating,
+}) {
   const isAvailable = volunteer.isAvailable;
 
   return (
@@ -29,8 +33,13 @@ export default function VolunteerCard({ volunteer, onToggleAvailability }) {
             : "v-card__toggle--unavailable"
         }`}
         onClick={() => onToggleAvailability(volunteer.id, !isAvailable)}
+        disabled={isUpdating}
       >
-        {isAvailable ? "✓ Available" : "Unavailable"}
+        {isUpdating
+          ? "Updating..."
+          : isAvailable
+            ? "✓ Available"
+            : "Unavailable"}
       </button>
     </div>
   );
