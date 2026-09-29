@@ -1,5 +1,17 @@
-import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Link,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
+import { useEffect, useState } from "react";
+
 import { AuthProvider, useAuth } from "./context/AuthContext";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -10,6 +22,7 @@ import ReportIncidentPage from "./pages/ReportIncidentPage";
 import AssignmentsPage from "./pages/AssignmentsPage";
 import ResourcesPage from "./pages/ResourcesPage";
 import ResourceReportsPage from "./pages/ResourceReportsPage";
+
 import "./App.css";
 
 function ProtectedRoute({ children, allowedRoles }) {
@@ -28,135 +41,365 @@ function ProtectedRoute({ children, allowedRoles }) {
 
 function NavigationHeader() {
   const { user, logout } = useAuth();
+
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const isAuthPage =
+    location.pathname === "/login" || location.pathname === "/register";
+
   const isDashboard = location.pathname === "/";
 
+  // Close mobile menu when changing pages
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  function handleBack() {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate("/");
+    }
+  }
+
+  function handleLogout() {
+    setMobileMenuOpen(false);
+    logout();
+  }
+
   return (
-    <header className="app-header">
-      <div className="app-header__left">
-        <Link to="/" className="app-header__brand" title="Go to Dashboard">
-          <span className="app-header__mark">DVC</span>
-          <span className="app-header__title">
-            Disaster Volunteer Coordination
-          </span>
-        </Link>
-      </div>
+    <>
+      <header className="app-header">
+        <div className="app-header__left">
+          <Link to="/" className="app-header__brand" title="Go to Dashboard">
+            <span className="app-header__mark">DVC</span>
 
-      {user && !isAuthPage && (
-        <div className="app-header__center">
-          {!isDashboard && (
-            <button
-              type="button"
-              className="app-header__back-btn"
-              onClick={() => {
-                if (window.history.state && window.history.state.idx > 0) {
-                  navigate(-1);
-                } else {
-                  navigate("/");
-                }
-              }}
-              title="Go back to previous page"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
+            <span className="app-header__title">
+              Disaster Volunteer Coordination
+            </span>
+          </Link>
+        </div>
+
+        {user && !isAuthPage && (
+          <div className="app-header__center">
+            {!isDashboard && (
+              <button
+                type="button"
+                className="app-header__back-btn"
+                onClick={handleBack}
+                title="Go back to previous page"
               >
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
-              <span>Back</span>
-            </button>
-          )}
-
-          <nav className="app-header__nav">
-            <Link
-              to="/"
-              className={`app-header__nav-link ${location.pathname === "/" ? "app-header__nav-link--active" : ""}`}
-            >
-              Dashboard
-            </Link>
-            {(user.role === "Coordinator" || user.role === "Admin") && (
-              <>
-                <Link
-                  to="/incidents"
-                  className={`app-header__nav-link ${location.pathname.startsWith("/incidents") ? "app-header__nav-link--active" : ""}`}
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  aria-hidden="true"
                 >
-                  Incidents
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+
+                <span>Back</span>
+              </button>
+            )}
+
+            {/* Desktop navigation */}
+            <nav className="app-header__nav">
+              <Link
+                to="/"
+                className={`app-header__nav-link ${
+                  location.pathname === "/"
+                    ? "app-header__nav-link--active"
+                    : ""
+                }`}
+              >
+                Dashboard
+              </Link>
+
+              {(user.role === "Coordinator" || user.role === "Admin") && (
+                <>
+                  <Link
+                    to="/incidents"
+                    className={`app-header__nav-link ${
+                      location.pathname.startsWith("/incidents")
+                        ? "app-header__nav-link--active"
+                        : ""
+                    }`}
+                  >
+                    Incidents
+                  </Link>
+
+                  <Link
+                    to="/volunteers"
+                    className={`app-header__nav-link ${
+                      location.pathname === "/volunteers"
+                        ? "app-header__nav-link--active"
+                        : ""
+                    }`}
+                  >
+                    Volunteers
+                  </Link>
+
+                  <Link
+                    to="/matches"
+                    className={`app-header__nav-link ${
+                      location.pathname === "/matches"
+                        ? "app-header__nav-link--active"
+                        : ""
+                    }`}
+                  >
+                    Matches
+                  </Link>
+
+                  <Link
+                    to="/assignments"
+                    className={`app-header__nav-link ${
+                      location.pathname === "/assignments"
+                        ? "app-header__nav-link--active"
+                        : ""
+                    }`}
+                  >
+                    Assignments
+                  </Link>
+
+                  <Link
+                    to="/resources"
+                    className={`app-header__nav-link ${
+                      location.pathname === "/resources"
+                        ? "app-header__nav-link--active"
+                        : ""
+                    }`}
+                  >
+                    Resources
+                  </Link>
+
+                  <Link
+                    to="/reports"
+                    className={`app-header__nav-link ${
+                      location.pathname === "/reports"
+                        ? "app-header__nav-link--active"
+                        : ""
+                    }`}
+                  >
+                    Reports
+                  </Link>
+                </>
+              )}
+
+              {user.role === "Requester" && (
+                <Link
+                  to="/incidents/new"
+                  className={`app-header__nav-link ${
+                    location.pathname === "/incidents/new"
+                      ? "app-header__nav-link--active"
+                      : ""
+                  }`}
+                >
+                  Report Incident
                 </Link>
+              )}
+
+              {user.role === "Volunteer" && (
                 <Link
                   to="/volunteers"
-                  className={`app-header__nav-link ${location.pathname === "/volunteers" ? "app-header__nav-link--active" : ""}`}
+                  className={`app-header__nav-link ${
+                    location.pathname === "/volunteers"
+                      ? "app-header__nav-link--active"
+                      : ""
+                  }`}
                 >
-                  Volunteers
+                  My Profile
                 </Link>
-                <Link
-                  to="/matches"
-                  className={`app-header__nav-link ${location.pathname === "/matches" ? "app-header__nav-link--active" : ""}`}
+              )}
+            </nav>
+          </div>
+        )}
+
+        {user && !isAuthPage && (
+          <div className="app-header__right">
+            <div className="app-header__user">
+              <span className="app-header__user-name">{user.fullName}</span>
+
+              <span className="app-header__user-role">{user.role}</span>
+            </div>
+
+            <button
+              type="button"
+              className="app-header__signout-btn"
+              onClick={handleLogout}
+              title="Sign out"
+            >
+              Sign out
+            </button>
+
+            {/* Mobile menu button */}
+            <button
+              type="button"
+              className="app-header__menu-btn"
+              onClick={() => setMobileMenuOpen((current) => !current)}
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation"
+            >
+              {mobileMenuOpen ? (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  aria-hidden="true"
                 >
-                  Matches
-                </Link>
-                <Link
-                  to="/assignments"
-                  className={`app-header__nav-link ${location.pathname === "/assignments" ? "app-header__nav-link--active" : ""}`}
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  aria-hidden="true"
                 >
-                  Assignments
-                </Link>
-                <Link
-                  to="/resources"
-                  className={`app-header__nav-link ${location.pathname === "/resources" ? "app-header__nav-link--active" : ""}`}
-                >
-                  Resources
-                </Link>
-                <Link
-                  to="/reports"
-                  className={`app-header__nav-link ${location.pathname === "/reports" ? "app-header__nav-link--active" : ""}`}
-                >
-                  Reports
-                </Link>
-              </>
-            )}
-            {user.role === "Requester" && (
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
+        )}
+      </header>
+
+      {/* Mobile navigation */}
+      {user && !isAuthPage && mobileMenuOpen && (
+        <nav id="mobile-navigation" className="mobile-nav">
+          <div className="mobile-nav__user">
+            <span className="mobile-nav__user-name">{user.fullName}</span>
+
+            <span className="mobile-nav__user-role">{user.role}</span>
+          </div>
+
+          <Link
+            to="/"
+            className={`mobile-nav__link ${
+              location.pathname === "/" ? "mobile-nav__link--active" : ""
+            }`}
+          >
+            Dashboard
+          </Link>
+
+          {(user.role === "Coordinator" || user.role === "Admin") && (
+            <>
               <Link
-                to="/incidents/new"
-                className={`app-header__nav-link ${location.pathname === "/incidents/new" ? "app-header__nav-link--active" : ""}`}
+                to="/incidents"
+                className={`mobile-nav__link ${
+                  location.pathname.startsWith("/incidents")
+                    ? "mobile-nav__link--active"
+                    : ""
+                }`}
               >
-                Report Incident
+                Incidents
               </Link>
-            )}
-            {user.role === "Volunteer" && (
+
               <Link
                 to="/volunteers"
-                className={`app-header__nav-link ${location.pathname === "/volunteers" ? "app-header__nav-link--active" : ""}`}
+                className={`mobile-nav__link ${
+                  location.pathname === "/volunteers"
+                    ? "mobile-nav__link--active"
+                    : ""
+                }`}
               >
-                My Profile
+                Volunteers
               </Link>
-            )}
-          </nav>
-        </div>
-      )}
 
-      {user && !isAuthPage && (
-        <div className="app-header__right">
-          <div className="app-header__user">
-            <span className="app-header__user-name">{user.fullName}</span>
-            <span className="app-header__user-role">{user.role}</span>
-          </div>
+              <Link
+                to="/matches"
+                className={`mobile-nav__link ${
+                  location.pathname === "/matches"
+                    ? "mobile-nav__link--active"
+                    : ""
+                }`}
+              >
+                Matches
+              </Link>
+
+              <Link
+                to="/assignments"
+                className={`mobile-nav__link ${
+                  location.pathname === "/assignments"
+                    ? "mobile-nav__link--active"
+                    : ""
+                }`}
+              >
+                Assignments
+              </Link>
+
+              <Link
+                to="/resources"
+                className={`mobile-nav__link ${
+                  location.pathname === "/resources"
+                    ? "mobile-nav__link--active"
+                    : ""
+                }`}
+              >
+                Resources
+              </Link>
+
+              <Link
+                to="/reports"
+                className={`mobile-nav__link ${
+                  location.pathname === "/reports"
+                    ? "mobile-nav__link--active"
+                    : ""
+                }`}
+              >
+                Reports
+              </Link>
+            </>
+          )}
+
+          {user.role === "Requester" && (
+            <Link
+              to="/incidents/new"
+              className={`mobile-nav__link ${
+                location.pathname === "/incidents/new"
+                  ? "mobile-nav__link--active"
+                  : ""
+              }`}
+            >
+              Report Incident
+            </Link>
+          )}
+
+          {user.role === "Volunteer" && (
+            <Link
+              to="/volunteers"
+              className={`mobile-nav__link ${
+                location.pathname === "/volunteers"
+                  ? "mobile-nav__link--active"
+                  : ""
+              }`}
+            >
+              My Profile
+            </Link>
+          )}
+
           <button
-            className="app-header__signout-btn"
-            onClick={logout}
-            title="Sign out"
+            type="button"
+            className="mobile-nav__signout"
+            onClick={handleLogout}
           >
             Sign out
           </button>
-        </div>
+        </nav>
       )}
-    </header>
+    </>
   );
 }
 
@@ -169,10 +412,12 @@ function AppRoutes() {
         path="/login"
         element={user ? <Navigate to="/" replace /> : <Login />}
       />
+
       <Route
         path="/register"
         element={user ? <Navigate to="/" replace /> : <Register />}
       />
+
       <Route
         path="/"
         element={
@@ -181,6 +426,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/incidents"
         element={
@@ -189,6 +435,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/incidents/new"
         element={
@@ -197,6 +444,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/matches"
         element={
@@ -205,6 +453,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/assignments"
         element={
@@ -213,6 +462,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/resources"
         element={
@@ -221,6 +471,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/reports"
         element={
@@ -229,6 +480,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/volunteers"
         element={
@@ -237,7 +489,8 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      {/* Fallback to Dashboard for any unknown route */}
+
+      {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
