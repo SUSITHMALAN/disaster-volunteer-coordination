@@ -5,6 +5,7 @@ import {
   getVolunteerCapacity,
   updateAssignmentStatus,
 } from "../api/assignments";
+
 import "./AssignmentsPage.css";
 
 const STATUS_OPTIONS = [
@@ -53,14 +54,43 @@ function getNextAction(status) {
   return null;
 }
 
+function getSuccessMessage(newStatus) {
+  if (newStatus === "Dispatched") {
+    return "Assignment dispatched successfully.";
+  }
+
+  if (newStatus === "InProgress") {
+    return "Assignment started successfully.";
+  }
+
+  if (newStatus === "Completed") {
+    return "Assignment completed successfully.";
+  }
+
+  if (newStatus === "Cancelled") {
+    return "Assignment cancelled successfully.";
+  }
+
+  return "Assignment updated successfully.";
+}
+
 export default function AssignmentsPage() {
   const [assignments, setAssignments] = useState([]);
+
   const [statusFilter, setStatusFilter] = useState("All");
+
   const [incidentFilter, setIncidentFilter] = useState("");
+
   const [loading, setLoading] = useState(true);
+
   const [updatingId, setUpdatingId] = useState(null);
+
   const [error, setError] = useState("");
+
+  const [success, setSuccess] = useState("");
+
   const [capacities, setCapacities] = useState({});
+
   const [capacityLoading, setCapacityLoading] = useState(false);
 
   async function loadVolunteerCapacities(data) {
@@ -101,11 +131,12 @@ export default function AssignmentsPage() {
 
     try {
       const data = await getAssignmentHistory();
+
       const assignmentData = data || [];
 
       setAssignments(assignmentData);
-      await loadVolunteerCapacities(assignmentData);
 
+      await loadVolunteerCapacities(assignmentData);
     } catch (err) {
       setError(err.message || "Failed to load assignments.");
     } finally {
@@ -116,10 +147,14 @@ export default function AssignmentsPage() {
   useEffect(() => {
     (async () => {
       setError("");
+
       try {
         const data = await getAssignmentHistory();
+
         const assignmentData = data || [];
+
         setAssignments(assignmentData);
+
         await loadVolunteerCapacities(assignmentData);
       } catch (err) {
         setError(err.message || "Failed to load assignments.");
@@ -131,12 +166,20 @@ export default function AssignmentsPage() {
 
   function handleRefresh() {
     setLoading(true);
+    setError("");
+    setSuccess("");
+
     fetchAssignments();
   }
 
   async function handleStatusUpdate(id, newStatus) {
+    if (updatingId) {
+      return;
+    }
+
     setUpdatingId(id);
     setError("");
+    setSuccess("");
 
     try {
       const updated = await updateAssignmentStatus(id, newStatus);
@@ -146,11 +189,25 @@ export default function AssignmentsPage() {
           assignment.id === id ? updated : assignment,
         ),
       );
+
+      setSuccess(getSuccessMessage(newStatus));
     } catch (err) {
       setError(err.message || "Failed to update assignment status.");
     } finally {
       setUpdatingId(null);
     }
+  }
+
+  async function handleCancelAssignment(assignment) {
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this assignment?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    await handleStatusUpdate(assignment.id, "Cancelled");
   }
 
   const filteredAssignments = useMemo(() => {
@@ -180,7 +237,6 @@ export default function AssignmentsPage() {
 
   return (
     <div className="assignments-page">
-
       <div className="assignments-page__header">
         <div>
           <p className="assignments-page__eyebrow">COORDINATOR DISPATCH</p>
@@ -207,6 +263,7 @@ export default function AssignmentsPage() {
       <div className="assignments-page__filters">
         <label>
           <span>Status</span>
+
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
@@ -223,6 +280,7 @@ export default function AssignmentsPage() {
 
         <label>
           <span>Incident ID</span>
+
           <input
             type="text"
             placeholder="Filter by incident ID"
@@ -231,6 +289,12 @@ export default function AssignmentsPage() {
           />
         </label>
       </div>
+
+      {success && (
+        <div className="assignments-page__success" role="status">
+          {success}
+        </div>
+      )}
 
       {error && (
         <div className="assignments-page__error" role="alert">
@@ -255,6 +319,7 @@ export default function AssignmentsPage() {
                 <div className="assignment-column__header">
                   <div>
                     <h2>{formatStatus(status)}</h2>
+
                     <span>{items.length} assignment(s)</span>
                   </div>
                 </div>
@@ -267,7 +332,9 @@ export default function AssignmentsPage() {
                   ) : (
                     items.map((assignment) => {
                       const nextStatus = NEXT_STATUS[assignment.status];
+
                       const nextAction = getNextAction(assignment.status);
+
                       const capacity = capacities[assignment.volunteerId];
 
                       return (
@@ -292,16 +359,19 @@ export default function AssignmentsPage() {
                           <dl className="assignment-card__details">
                             <div>
                               <dt>Incident</dt>
+
                               <dd>{assignment.incidentId}</dd>
                             </div>
 
                             <div>
                               <dt>Volunteer</dt>
+
                               <dd>{assignment.volunteerId}</dd>
                             </div>
 
                             <div>
                               <dt>Capacity</dt>
+
                               <dd>
                                 {capacityLoading && !capacity
                                   ? "Loading..."
@@ -313,6 +383,7 @@ export default function AssignmentsPage() {
 
                             <div>
                               <dt>Availability</dt>
+
                               <dd>
                                 {capacity
                                   ? capacity.isAvailable
@@ -324,6 +395,7 @@ export default function AssignmentsPage() {
 
                             <div>
                               <dt>Assigned</dt>
+
                               <dd>{formatDate(assignment.assignedAtUtc)}</dd>
                             </div>
                           </dl>
@@ -352,7 +424,7 @@ export default function AssignmentsPage() {
                                 className="assignment-card__cancel"
                                 disabled={updatingId === assignment.id}
                                 onClick={() =>
-                                  handleStatusUpdate(assignment.id, "Cancelled")
+                                  handleCancelAssignment(assignment)
                                 }
                               >
                                 {updatingId === assignment.id
