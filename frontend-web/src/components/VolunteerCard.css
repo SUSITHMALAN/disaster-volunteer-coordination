@@ -3,10 +3,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
+
   padding: 18px 20px;
+
   border-bottom: 1px solid var(--color-border);
   border-left: 3px solid transparent;
+
   background: transparent;
+
   transition: all 0.25s var(--ease-out);
 }
 
@@ -26,29 +31,39 @@
 .v-card__info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+
+  flex: 1;
+  min-width: 0;
 }
 
 .v-card__name {
   font-weight: 600;
   font-size: 15px;
   color: var(--color-text);
+
+  overflow-wrap: anywhere;
 }
 
 .v-card__skills {
-  font-size: 13px;
-  color: var(--color-text-muted);
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+
+  font-size: 13px;
+  color: var(--color-text-muted);
 }
 
 .v-card__skill-tag {
   display: inline-block;
+
   padding: 2px 10px;
+
   background: var(--color-info-soft);
   color: var(--color-info);
+
   border-radius: var(--radius-full);
+
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -62,34 +77,91 @@
 
 /* ── Toggle Button ── */
 .v-card__toggle {
+  flex-shrink: 0;
+
   padding: 8px 18px;
+
   border-radius: var(--radius-full);
   border: none;
+
   font-size: 13px;
   font-weight: 600;
+
   cursor: pointer;
-  color: #FFFFFF;
+
+  color: #ffffff;
+
   transition: all 0.25s var(--ease-out);
+
   white-space: nowrap;
 }
 
 .v-card__toggle--available {
   background: var(--color-success);
-  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.3);
+
+  box-shadow:
+    0 2px 12px rgba(16, 185, 129, 0.3);
 }
 
 .v-card__toggle--available:hover {
   background: #059669;
+
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+
+  box-shadow:
+    0 4px 16px rgba(16, 185, 129, 0.4);
 }
 
 .v-card__toggle--unavailable {
   background: var(--color-unavailable);
-  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.2);
+
+  box-shadow:
+    0 2px 8px rgba(100, 116, 139, 0.2);
 }
 
 .v-card__toggle--unavailable:hover {
   background: #475569;
+
   transform: translateY(-1px);
+}
+
+/* ── Tablet / Smaller Screens ── */
+@media (max-width: 768px) {
+  .v-card {
+    align-items: flex-start;
+    flex-direction: column;
+
+    padding: 18px;
+  }
+
+  .v-card__info {
+    width: 100%;
+  }
+
+  .v-card__toggle {
+    width: 100%;
+
+    text-align: center;
+  }
+}
+
+/* ── Small Phones ── */
+@media (max-width: 480px) {
+  .v-card {
+    padding: 16px;
+  }
+
+  .v-card__name {
+    font-size: 14px;
+  }
+
+  .v-card__skill-tag {
+    font-size: 10px;
+  }
+
+  .v-card__toggle {
+    padding: 9px 14px;
+
+    font-size: 12px;
+  }
 }
