@@ -17,7 +17,7 @@
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: #6366f1;
+  color: var(--color-primary);
   text-transform: uppercase;
   margin-bottom: 0.25rem;
 }
@@ -25,20 +25,20 @@
 .reports-page__title {
   font-size: 1.875rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--color-text);
   margin: 0 0 0.25rem 0;
 }
 
 .reports-page__subtitle {
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 0.95rem;
   margin: 0;
 }
 
 .reports-page__refresh {
-  background: #f1f5f9;
-  color: #334155;
-  border: 1px solid #cbd5e1;
+  background: var(--color-surface-solid);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
   padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
   font-weight: 600;
@@ -47,13 +47,13 @@
 }
 
 .reports-page__refresh:hover {
-  background: #e2e8f0;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .reports-page__error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   margin-bottom: 1.5rem;
@@ -62,7 +62,7 @@
 .reports-tabs {
   display: flex;
   gap: 0.5rem;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-border);
   margin-bottom: 1.5rem;
   overflow-x: auto;
 }
@@ -73,35 +73,35 @@
   padding: 0.75rem 1.25rem;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-text-secondary);
   cursor: pointer;
   border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
+  margin-bottom: -1px;
   white-space: nowrap;
 }
 
 .tab-btn:hover {
-  color: #1e293b;
+  color: var(--color-text);
 }
 
 .tab-btn--active {
-  color: #4f46e5;
-  border-bottom-color: #4f46e5;
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
 }
 
 .reports-page__state {
   text-align: center;
   padding: 3rem 1rem;
-  color: #64748b;
-  background: #ffffff;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-solid);
   border-radius: 0.75rem;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--color-border);
 }
 
 .pane-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text);
   margin-bottom: 1.25rem;
 }
 
@@ -112,11 +112,16 @@
 }
 
 .summary-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   padding: 1.25rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s ease;
+}
+
+.summary-card:hover {
+  border-color: rgba(249, 115, 22, 0.4);
 }
 
 .summary-card__header {
@@ -129,16 +134,16 @@
 .summary-card__header h3 {
   margin: 0;
   font-size: 1.1rem;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .summary-card__count {
   font-size: 0.75rem;
   font-weight: 700;
-  background: #f1f5f9;
+  background: rgba(255, 255, 255, 0.07);
   padding: 0.2rem 0.5rem;
   border-radius: 0.25rem;
-  color: #475569;
+  color: var(--color-text-secondary);
 }
 
 .summary-card__metrics {
@@ -156,38 +161,38 @@
 
 .summary-card__metrics span {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-weight: 600;
 }
 
 .summary-card__metrics strong {
   font-size: 1.2rem;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .text-danger strong {
-  color: #dc2626 !important;
+  color: #ef4444 !important;
 }
 
 .empty-state {
   text-align: center;
   padding: 2.5rem;
-  background: #ffffff;
+  background: var(--color-surface-solid);
   border-radius: 0.75rem;
-  color: #64748b;
-  border: 1px dashed #cbd5e1;
+  color: var(--color-text-secondary);
+  border: 1px dashed var(--color-border);
 }
 
 .empty-state--success {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-  color: #166534;
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #4ade80;
   font-weight: 600;
 }
 
 .shortage-table-wrapper {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   overflow-x: auto;
 }
@@ -202,15 +207,19 @@
 .report-table th,
 .report-table td {
   padding: 0.85rem 1.25rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .report-table th {
-  background: #f8fafc;
+  background: rgba(255, 255, 255, 0.04);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #475569;
+  color: var(--color-text-secondary);
+}
+
+.report-table td {
+  color: var(--color-text);
 }
 
 .report-table tr:last-child td {
@@ -224,10 +233,15 @@
 }
 
 .incident-report-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   padding: 1.25rem;
+  transition: border-color 0.2s ease;
+}
+
+.incident-report-card:hover {
+  border-color: rgba(249, 115, 22, 0.4);
 }
 
 .incident-report-card__header {
@@ -239,20 +253,25 @@
 .incident-report-card__header h3 {
   margin: 0;
   font-size: 1rem;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .incident-report-card__header span {
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
 }
 
 .resource-mini-row {
   display: flex;
   justify-content: space-between;
   padding: 0.4rem 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-border);
   font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.resource-mini-row:last-child {
+  border-bottom: none;
 }
 
 .metrics-row {
@@ -262,16 +281,21 @@
 }
 
 .metric-box {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   padding: 1.5rem;
+  transition: border-color 0.2s ease;
+}
+
+.metric-box:hover {
+  border-color: rgba(249, 115, 22, 0.4);
 }
 
 .metric-box h3 {
   margin: 0 0 1rem 0;
   font-size: 1.1rem;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .metric-box ul {
@@ -287,6 +311,31 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.95rem;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-border);
   padding-bottom: 0.5rem;
+  color: var(--color-text-secondary);
+}
+
+.metric-box li:last-child {
+  border-bottom: none;
+}
+
+.metric-box li strong {
+  color: var(--color-text);
+}
+
+@media (max-width: 640px) {
+  .reports-page {
+    padding: 1.25rem 1rem;
+  }
+
+  .reports-page__refresh {
+    width: 100%;
+  }
+
+  .summary-grid,
+  .incident-breakdown-list,
+  .metrics-row {
+    grid-template-columns: 1fr;
+  }
 }
