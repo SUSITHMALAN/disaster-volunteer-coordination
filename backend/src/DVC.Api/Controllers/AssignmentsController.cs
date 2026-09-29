@@ -36,6 +36,10 @@ namespace DVC.Api.Controllers
             {
                 return NotFound(ex.Message);
             }
+            catch (AssignmentValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(ex.Message);
