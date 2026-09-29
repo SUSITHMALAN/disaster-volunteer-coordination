@@ -1,43 +1,112 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+
 import MatchesPanel from "../components/MatchesPanel";
 import BackButton from "../components/BackButton";
+import { getIncidents } from "../api/incidents";
+
 import "./MatchesPage.css";
 
 export default function MatchesPage() {
   const [searchParams] = useSearchParams();
-  const qId = searchParams.get("incidentId") || "";
-  const [incidentId, setIncidentId] = useState(qId);
-  const [submittedId, setSubmittedId] = useState(qId);
-  const [prevQId, setPrevQId] = useState(qId);
 
-  if (qId !== prevQId) {
-    setPrevQId(qId);
-    setIncidentId(qId);
-    setSubmittedId(qId);
+  const queryIncidentId = searchParams.get("incidentId") || "";
+
+  const [incidents, setIncidents] = useState([]);
+  const [incidentId, setIncidentId] = useState(queryIncidentId);
+
+  const [submittedId, setSubmittedId] = useState(queryIncidentId);
+
+  const [loadingIncidents, setLoadingIncidents] = useState(true);
+
+  const [incidentError, setIncidentError] = useState("");
+
+  useEffect(() => {
+    fetchIncidents();
+  }, []);
+
+  useEffect(() => {
+    setIncidentId(queryIncidentId);
+    setSubmittedId(queryIncidentId);
+  }, [queryIncidentId]);
+
+  async function fetchIncidents() {
+    setLoadingIncidents(true);
+    setIncidentError("");
+
+    try {
+      const data = await getIncidents();
+      setIncidents(data || []);
+    } catch (err) {
+      setIncidentError(err.message || "Failed to load incidents.");
+      setIncidents([]);
+    } finally {
+      setLoadingIncidents(false);
+    }
   }
 
   function handleSubmit(e) {
     e.preventDefault();
-    setSubmittedId(incidentId.trim());
+
+    if (!incidentId) {
+      return;
+    }
+
+    setSubmittedId(incidentId);
   }
 
   return (
     <div className="matches-page">
       <BackButton to="/" label="Back to Dashboard" />
+
       <h1 className="matches-page__title">Volunteer Matches</h1>
+
       <p className="matches-page__subtitle">
-        Enter an incident ID to see its ranked volunteer matches.
+        Select an incident to view its ranked volunteer matches.
       </p>
 
       <form className="matches-page__form" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Incident ID (e.g. 55555555-5555-5555-5555-555555555551)"
-          value={incidentId}
-          onChange={(e) => setIncidentId(e.target.value)}
-        />
-        <button type="submit">View matches</button>
+        <label className="matches-page__field">
+          <span>Incident Name</span>
+
+          <select
+            value={incidentId}
+            onChange={(e) => setIncidentId(e.target.value)}
+            disabled={loadingIncidents}
+            required
+          >
+            <option value="">
+              {loadingIncidents ? "Loading incidents..." : "Select an incident"}
+            </option>
+
+            {incidents.map((incident) => (
+              <option key={incident.id} value={incident.id}>
+                {incident.title}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="matches-page__field">
+          <span>Incident ID</span>
+
+          <input
+            type="text"
+            value={incidentId}
+            readOnly
+            placeholder="Incident ID will appear here"
+          />
+        </label>
+
+        {incidentError && (
+          <div className="matches-page__error" role="alert">
+            {incidentError}
+          </div>
+        )}
+
+        <button type="submit" disabled={!incidentId || loadingIncidents}>
+          View Matches
+        </button>
       </form>
 
       {submittedId && <MatchesPanel incidentId={submittedId} />}
