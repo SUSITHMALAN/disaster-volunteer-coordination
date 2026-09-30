@@ -47,15 +47,31 @@ function NavigationHeader() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem("dvc-theme");
+
+    if (savedTheme === "light" || savedTheme === "dark") {
+      return savedTheme;
+    }
+
+    return window.matchMedia?.("(prefers-color-scheme: light)").matches
+      ? "light"
+      : "dark";
+  });
+
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/register";
 
   const isDashboard = location.pathname === "/";
 
-  // Close mobile menu when changing pages
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("dvc-theme", theme);
+  }, [theme]);
 
   function handleBack() {
     if (window.history.state && window.history.state.idx > 0) {
@@ -68,6 +84,10 @@ function NavigationHeader() {
   function handleLogout() {
     setMobileMenuOpen(false);
     logout();
+  }
+
+  function toggleTheme() {
+    setTheme((current) => (current === "dark" ? "light" : "dark"));
   }
 
   return (
@@ -108,7 +128,6 @@ function NavigationHeader() {
               </button>
             )}
 
-            {/* Desktop navigation */}
             <nav className="app-header__nav">
               <Link
                 to="/"
@@ -220,63 +239,109 @@ function NavigationHeader() {
           </div>
         )}
 
-        {user && !isAuthPage && (
-          <div className="app-header__right">
-            <div className="app-header__user">
-              <span className="app-header__user-name">{user.fullName}</span>
+        <div className="app-header__right">
+          <button
+            type="button"
+            className="app-header__theme-btn"
+            onClick={toggleTheme}
+            title={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
+            aria-label={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
+          >
+            {theme === "dark" ? (
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2" />
+                <path d="M12 20v2" />
+                <path d="m4.93 4.93 1.42 1.42" />
+                <path d="m17.66 17.66 1.41 1.41" />
+                <path d="M2 12h2" />
+                <path d="M20 12h2" />
+                <path d="m6.34 17.66-1.41 1.41" />
+                <path d="m19.07 4.93-1.41 1.42" />
+              </svg>
+            ) : (
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            )}
+          </button>
 
-              <span className="app-header__user-role">{user.role}</span>
-            </div>
+          {user && !isAuthPage && (
+            <>
+              <div className="app-header__user">
+                <span className="app-header__user-name">{user.fullName}</span>
 
-            <button
-              type="button"
-              className="app-header__signout-btn"
-              onClick={handleLogout}
-              title="Sign out"
-            >
-              Sign out
-            </button>
+                <span className="app-header__user-role">{user.role}</span>
+              </div>
 
-            {/* Mobile menu button */}
-            <button
-              type="button"
-              className="app-header__menu-btn"
-              onClick={() => setMobileMenuOpen((current) => !current)}
-              aria-label="Toggle navigation menu"
-              aria-expanded={mobileMenuOpen}
-              aria-controls="mobile-navigation"
-            >
-              {mobileMenuOpen ? (
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  aria-hidden="true"
-                >
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  aria-hidden="true"
-                >
-                  <path d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
-          </div>
-        )}
+              <button
+                type="button"
+                className="app-header__signout-btn"
+                onClick={handleLogout}
+                title="Sign out"
+              >
+                Sign out
+              </button>
+
+              <button
+                type="button"
+                className="app-header__menu-btn"
+                onClick={() => setMobileMenuOpen((current) => !current)}
+                aria-label="Toggle navigation menu"
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-navigation"
+              >
+                {mobileMenuOpen ? (
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            </>
+          )}
+        </div>
       </header>
 
-      {/* Mobile navigation */}
       {user && !isAuthPage && mobileMenuOpen && (
         <nav id="mobile-navigation" className="mobile-nav">
           <div className="mobile-nav__user">
@@ -490,7 +555,6 @@ function AppRoutes() {
         }
       />
 
-      {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -502,6 +566,7 @@ function App() {
       <AuthProvider>
         <div className="app-shell">
           <NavigationHeader />
+
           <AppRoutes />
         </div>
       </AuthProvider>

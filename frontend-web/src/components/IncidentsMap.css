@@ -74,11 +74,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+
   padding: 10px 14px;
-  background: rgba(0, 0, 0, 0.25);
+
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+
   margin-bottom: 16px;
+
   flex-wrap: wrap;
 }
 
@@ -98,18 +103,24 @@
 
 .incidents-map-filter-btn {
   padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
+
   color: var(--color-text-muted);
+
   font-size: 12px;
   font-weight: 600;
+
   cursor: pointer;
+
   transition: all 0.2s ease;
 }
 
 .incidents-map-filter-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--color-surface-hover);
   color: var(--color-text);
 }
 
@@ -122,14 +133,24 @@
 
 .incidents-map-reset-btn {
   padding: 5px 12px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+
   color: var(--color-text);
+
   font-size: 12px;
   font-weight: 600;
+
   cursor: pointer;
+
   transition: all 0.2s ease;
+}
+
+.incidents-map-reset-btn:hover {
+  background: var(--color-surface-hover);
 }
 
 .incidents-map-reset-btn:hover {
@@ -187,10 +208,14 @@
 .incidents-map-sidebar {
   display: flex;
   flex-direction: column;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
+
   padding: 12px;
+
   overflow: hidden;
 }
 
@@ -214,15 +239,19 @@
 
 .incidents-map-item {
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  background: var(--color-surface-solid);
+
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+
   cursor: pointer;
+
   transition: all 0.2s ease;
 }
 
 .incidents-map-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-surface-hover);
   transform: translateX(2px);
 }
 

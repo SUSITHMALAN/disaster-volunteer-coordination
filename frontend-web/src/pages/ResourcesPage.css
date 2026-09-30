@@ -1,7 +1,14 @@
 .resources-page {
+  width: 100%;
   max-width: 1200px;
+
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+
+  padding: 2rem 1.5rem 4rem;
+
+  animation:
+    fadeInUp 0.5s
+    var(--ease-out) both;
 }
 
 .resources-page__header {
@@ -14,20 +21,34 @@
 }
 
 .resources-page__eyebrow {
+  margin: 0 0 0.3rem;
+
   color: var(--color-primary);
+
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
 }
 
 .resources-page__title {
-  font-size: 1.875rem;
-  font-weight: 800;
+  margin: 0;
+
+  font-family: var(--font-display);
+
+  font-size: 2rem;
+  font-weight: 700;
+
   color: var(--color-text);
-  margin: 0 0 0.25rem 0;
 }
 
 .resources-page__subtitle {
+  margin: 0.35rem 0 0;
+
   color: var(--color-text-secondary);
-  font-size: 0.95rem;
-  margin: 0;
+
+  font-size: 0.9rem;
 }
 
 .resources-page__actions {
