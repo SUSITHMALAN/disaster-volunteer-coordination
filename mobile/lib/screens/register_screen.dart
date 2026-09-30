@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../theme/app_theme.dart';
 import 'dashboard_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -47,22 +48,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F5F7),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF14181F),
-        title: const Text('Create an account'),
+        backgroundColor: AppTheme.background,
+        title: const Text('Create an Account', style: TextStyle(color: AppTheme.textPrimary)),
       ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 360),
+            constraints: const BoxConstraints(maxWidth: 380),
             child: Container(
               padding: const EdgeInsets.all(28),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFE2E5E9)),
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.border),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -70,38 +71,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   TextField(
                     controller: _fullNameController,
+                    style: const TextStyle(color: AppTheme.textPrimary),
                     decoration: const InputDecoration(labelText: 'Full name'),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
+                    style: const TextStyle(color: AppTheme.textPrimary),
                     decoration: const InputDecoration(labelText: 'Email'),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _passwordController,
                     obscureText: true,
+                    style: const TextStyle(color: AppTheme.textPrimary),
                     decoration: const InputDecoration(labelText: 'Password'),
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     initialValue: _role,
+                    dropdownColor: AppTheme.surface,
+                    style: const TextStyle(color: AppTheme.textPrimary),
                     decoration: const InputDecoration(labelText: 'I am a'),
                     items: _roles
-                        .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                        .map((r) => DropdownMenuItem(
+                              value: r,
+                              child: Text(r, style: const TextStyle(color: AppTheme.textPrimary)),
+                            ))
                         .toList(),
                     onChanged: (value) => setState(() => _role = value!),
                   ),
                   if (_error != null) ...[
-                    const SizedBox(height: 12),
-                    Text(_error!, style: const TextStyle(color: Color(0xFFB3413E), fontSize: 13)),
+                    const SizedBox(height: 14),
+                    Text(_error!, style: const TextStyle(color: AppTheme.danger, fontSize: 13)),
                   ],
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: _submitting ? null : _handleRegister,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFB8722E),
+                      backgroundColor: AppTheme.primaryButton,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
