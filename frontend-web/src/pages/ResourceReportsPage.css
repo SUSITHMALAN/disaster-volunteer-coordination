@@ -716,3 +716,20 @@
 .incident-resource-table__header {
   color: var(--color-text-secondary);
 }
+
+.report-info-note {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 0.6rem;
+
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.report-info-note strong {
+  color: var(--color-text);
+}

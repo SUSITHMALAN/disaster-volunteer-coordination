@@ -179,6 +179,27 @@ export default function ResourceReportsPage() {
 
   const shortageItems = shortages?.items || [];
 
+  const volunteers = volunteerLoad?.volunteers || [];
+
+  const totalVolunteers = volunteers.length;
+
+  const availableVolunteers = volunteers.filter(
+    (volunteer) => volunteer.isAvailable,
+  ).length;
+
+  const engagedVolunteers = volunteers.filter(
+    (volunteer) => Number(volunteer.activeIncidentCount) > 0,
+  ).length;
+
+  const totalActiveIncidentAssignments = volunteers.reduce(
+    (total, volunteer) => total + Number(volunteer.activeIncidentCount || 0),
+    0,
+  );
+
+  const incidentDistribution = incidentStats?.distribution || [];
+
+  const totalIncidents = incidentStats?.totalIncidents ?? 0;
+
   return (
     <div className="reports-page">
       <div className="reports-page__header">
@@ -526,74 +547,77 @@ export default function ResourceReportsPage() {
               <h2 className="pane-title">System Operational Metrics</h2>
 
               <div className="metrics-row">
-                {volunteerLoad && (
-                  <div className="metric-box">
-                    <h3>Volunteer Workforce Load</h3>
+                {/* Volunteer metrics */}
 
-                    <ul>
-                      <li>
-                        <span>Total Active Volunteers:</span>
+                <div className="metric-box">
+                  <h3>Volunteer Workforce Load</h3>
 
-                        <strong>
-                          {volunteerLoad.totalVolunteers ?? "N/A"}
-                        </strong>
-                      </li>
+                  <ul>
+                    <li>
+                      <span>Total Volunteers:</span>
 
-                      <li>
-                        <span>Assigned / On-Duty:</span>
+                      <strong>{totalVolunteers}</strong>
+                    </li>
 
-                        <strong>
-                          {volunteerLoad.assignedVolunteers ?? "N/A"}
-                        </strong>
-                      </li>
+                    <li>
+                      <span>Available Volunteers:</span>
 
-                      <li>
-                        <span>Available Capacity:</span>
+                      <strong>{availableVolunteers}</strong>
+                    </li>
 
-                        <strong>
-                          {volunteerLoad.availableVolunteers ?? "N/A"}
-                        </strong>
-                      </li>
-                    </ul>
-                  </div>
-                )}
+                    <li>
+                      <span>Volunteers Handling Incidents:</span>
 
-                {incidentStats && (
-                  <div className="metric-box">
-                    <h3>Incident Overview</h3>
+                      <strong>{engagedVolunteers}</strong>
+                    </li>
 
-                    <ul>
-                      <li>
-                        <span>Total Incidents:</span>
+                    <li>
+                      <span>Active Incident Assignments:</span>
 
-                        <strong>{incidentStats.totalIncidents ?? "N/A"}</strong>
-                      </li>
+                      <strong>{totalActiveIncidentAssignments}</strong>
+                    </li>
+                  </ul>
+                </div>
 
-                      <li>
-                        <span>Active / Open:</span>
+                {/* Incident metrics */}
 
-                        <strong>
-                          {incidentStats.activeIncidents ?? "N/A"}
-                        </strong>
-                      </li>
+                <div className="metric-box">
+                  <h3>Incident Overview</h3>
 
-                      <li>
-                        <span>Resolved / Closed:</span>
+                  <ul>
+                    <li>
+                      <span>Total Incidents:</span>
 
-                        <strong>
-                          {incidentStats.resolvedIncidents ?? "N/A"}
-                        </strong>
-                      </li>
-                    </ul>
-                  </div>
-                )}
+                      <strong>{totalIncidents}</strong>
+                    </li>
 
-                {!volunteerLoad && !incidentStats && (
-                  <div className="empty-state">
-                    Operational metrics are not available.
-                  </div>
-                )}
+                    <li>
+                      <span>Statistic Groups:</span>
+
+                      <strong>{incidentDistribution.length}</strong>
+                    </li>
+
+                    <li>
+                      <span>Response Time Tracking:</span>
+
+                      <strong>
+                        {incidentStats?.responseTimeAvailable
+                          ? "Available"
+                          : "Not Available"}
+                      </strong>
+                    </li>
+                  </ul>
+                </div>
               </div>
+
+              {incidentStats &&
+                !incidentStats.responseTimeAvailable &&
+                incidentStats.responseTimeUnavailableReason && (
+                  <div className="report-info-note">
+                    <strong>Response time data unavailable:</strong>{" "}
+                    {incidentStats.responseTimeUnavailableReason}
+                  </div>
+                )}
             </div>
           )}
         </div>
