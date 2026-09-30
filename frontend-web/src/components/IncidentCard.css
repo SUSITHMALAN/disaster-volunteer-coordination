@@ -172,17 +172,16 @@
 }
 
 .i-card__action--advance {
-  background: var(--color-relief);
+  background: #15803d;
   color: #ffffff;
-
-  box-shadow:
-    0 2px 12px rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
 }
 
 .i-card__action--advance:hover {
-  background: var(--color-relief-hover);
-
+  background: #166534;
   transform: translateY(-1px);
+  box-shadow: none;
 }
 
 .i-card__action--cancel {

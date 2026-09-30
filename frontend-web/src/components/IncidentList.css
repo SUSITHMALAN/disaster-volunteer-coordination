@@ -1,87 +1,277 @@
-/* ── Incident List Container ── */
 .incident-list {
-  max-width: 100%;
+  width: 100%;
 }
 
-/* ── Header ── */
+/* Header */
+
 .incident-list__header {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  gap: 1.5rem;
+
+  margin-bottom: 1.5rem;
+}
+
+.incident-list__eyebrow {
+  margin: 0 0 0.3rem;
+
+  color: var(--color-primary);
+
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
 }
 
 .incident-list__title {
-  font-family: var(--font-display);
-  font-size: 32px;
-  font-weight: 700;
   margin: 0;
-  background: var(--gradient-hero);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+
+  font-family: var(--font-display);
+
+  font-size: 2rem;
+  font-weight: 700;
+
+  color: var(--color-text);
 }
 
-.incident-list__subtitle {
-  font-size: 14px;
-  color: var(--color-text-muted);
-  margin: 0;
-  padding: 4px 12px;
-  background: var(--color-surface);
+.incident-list__description {
+  margin: 0.35rem 0 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 0.9rem;
+}
+
+.incident-list__counts {
+  display: flex;
+
+  gap: 0.5rem;
+
+  flex-shrink: 0;
+}
+
+.incident-list__count {
+  display: flex;
+  align-items: center;
+
+  gap: 0.35rem;
+
+  padding: 0.5rem 0.8rem;
+
   border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
+
+  background: var(--color-surface-solid);
 }
 
-/* ── Filter Select ── */
-.incident-list__filter {
+.incident-list__count strong {
+  color: var(--color-text);
+
+  font-size: 0.9rem;
+}
+
+.incident-list__count span {
+  color: var(--color-text-muted);
+
+  font-size: 0.75rem;
+}
+
+/* Filters */
+
+.incident-list__filters {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(150px, 1fr))
+    minmax(220px, 1.4fr);
+
+  gap: 0.9rem;
+
+  padding: 1rem;
+
+  margin-bottom: 0.9rem;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface-solid);
+}
+
+.incident-list__field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.4rem;
+}
+
+.incident-list__field span {
+  color: var(--color-text-secondary);
+
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.incident-list__field input,
+.incident-list__field select {
   width: 100%;
-  padding: 14px 18px;
+
+  padding: 0.7rem 0.8rem;
+
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--glass-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  font-size: 14px;
-  font-family: inherit;
+
+  background: rgba(255, 255, 255, 0.04);
+
   color: var(--color-text);
-  margin-bottom: 24px;
-  transition: all 0.25s var(--ease-out);
-}
 
-.incident-list__filter:hover {
-  border-color: var(--color-border-hover);
-}
+  font-family: inherit;
+  font-size: 0.84rem;
 
-.incident-list__filter:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-glow);
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-/* ── Status Messages ── */
-.incident-list__status {
+.incident-list__field input::placeholder {
   color: var(--color-text-muted);
-  font-size: 14px;
-  padding: 24px 0;
+}
+
+.incident-list__field select {
+  color-scheme: dark;
+}
+
+.incident-list__field select option {
+  background: #151e32;
+  color: #f8fafc;
+}
+
+.incident-list__field input:focus,
+.incident-list__field select:focus {
+  border-color: var(--color-primary);
+
+  box-shadow:
+    0 0 0 3px
+    var(--color-primary-glow);
+}
+
+/* Filter actions */
+
+.incident-list__filter-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 1rem;
+
+  margin-bottom: 1rem;
+
+  color: var(--color-text-muted);
+
+  font-size: 0.76rem;
+}
+
+.incident-list__filter-actions button {
+  padding: 0.35rem 0.7rem;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: transparent;
+
+  color: var(--color-text-secondary);
+
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.incident-list__filter-actions button:hover {
+  color: var(--color-text);
+
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Status */
+
+.incident-list__status {
+  padding: 2rem 1rem;
+
   text-align: center;
+
+  color: var(--color-text-muted);
+
+  font-size: 0.85rem;
 }
 
 .incident-list__status--error {
-  color: var(--color-danger);
-  padding: 14px 18px;
-  background: var(--color-danger-soft);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+
   text-align: left;
+
+  background: var(--color-danger-soft);
+
+  border: 1px solid
+    rgba(239, 68, 68, 0.25);
+
+  border-radius: var(--radius-md);
+
+  color: var(--color-danger);
 }
 
-/* ── Rows Container ── */
+/* Incident rows */
+
 .incident-list__rows {
-  border-radius: var(--radius-lg);
   overflow: hidden;
+
   border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+
   background: var(--glass-bg);
+
   backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(
+    var(--glass-blur)
+  );
+}
+
+/* Tablet */
+
+@media (max-width: 1000px) {
+  .incident-list__filters {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+  .incident-list__header {
+    align-items: flex-start;
+    flex-direction: column;
+
+    gap: 0.8rem;
+  }
+
+  .incident-list__filters {
+    grid-template-columns: 1fr;
+  }
+
+  .incident-list__counts {
+    flex-wrap: wrap;
+  }
+
+  .incident-list__filter-actions {
+    align-items: flex-start;
+    flex-direction: column;
+
+    gap: 0.5rem;
+  }
 }
