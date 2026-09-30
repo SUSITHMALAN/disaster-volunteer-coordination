@@ -31,8 +31,13 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (_) => DashboardScreen(user: user)),
       );
     } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '');
       setState(() {
-        _error = "Couldn't sign in. Check your email and password.";
+        if (msg.contains('401') || msg.contains('400') || msg.contains('Unauthorized')) {
+          _error = "Couldn't sign in. Check your email and password.";
+        } else {
+          _error = "Sign in error: $msg";
+        }
       });
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -91,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: Text(_submitting ? 'Signing in…' : 'Sign in'),
+                    child: Text(_submitting ? 'Signing in… (Wake up backend)' : 'Sign in'),
                   ),
                   const SizedBox(height: 16),
                   TextButton(

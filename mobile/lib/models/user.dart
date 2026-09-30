@@ -13,10 +13,10 @@ class AppUser {
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
     return AppUser(
-      userId: json['userId'],
-      fullName: json['fullName'],
-      email: json['email'],
-      role: json['role'],
+      userId: (json['userId'] ?? json['id'] ?? '').toString(),
+      fullName: (json['fullName'] ?? json['name'] ?? '').toString(),
+      email: (json['email'] ?? '').toString(),
+      role: (json['role'] ?? '').toString(),
     );
   }
 

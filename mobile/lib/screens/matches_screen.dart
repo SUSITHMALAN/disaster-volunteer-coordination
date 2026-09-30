@@ -260,8 +260,8 @@ class _MatchesScreenState extends State<MatchesScreen> {
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: scorePercent >= 70
-                                          ? AppTheme.emerald.withOpacity(0.2)
-                                          : AppTheme.amber.withOpacity(0.2),
+                                          ? AppTheme.emerald.withValues(alpha: 0.2)
+                                          : AppTheme.amber.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(6),
                                       border: Border.all(
                                         color: scorePercent >= 70 ? AppTheme.emerald : AppTheme.amber,
