@@ -26,24 +26,34 @@
 }
 
 .assignments-page__eyebrow {
+  margin: 0 0 0.3rem;
+
   color: var(--color-primary);
-  font-size: 11px;
+
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  margin-bottom: 6px;
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
 }
 
 .assignments-page__title {
+  margin: 0;
+
   font-family: var(--font-display);
-  font-size: 30px;
+
+  font-size: 2rem;
   font-weight: 700;
+
   color: var(--color-text);
 }
 
 .assignments-page__subtitle {
-  color: var(--color-text-muted);
-  font-size: 14px;
-  margin-top: 6px;
+  margin: 0.35rem 0 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 0.9rem;
 }
 
 .assignments-page__refresh {
