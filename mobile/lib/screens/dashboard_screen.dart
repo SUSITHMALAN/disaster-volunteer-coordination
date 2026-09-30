@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/user.dart';
 import '../services/auth_service.dart';
+import '../theme/app_theme.dart';
 import 'assigned_tasks_screen.dart';
 import 'assignments_screen.dart';
 import 'incidents_screen.dart';
@@ -21,21 +22,23 @@ class DashboardScreen extends StatelessWidget {
     switch (user.role) {
       case 'Volunteer':
         return [
-          _DashLink('My assigned tasks', 'assigned_tasks'),
-          _DashLink('My profile & availability', 'volunteers'),
+          _DashLink('My Assigned Tasks', 'assigned_tasks', Icons.assignment_turned_in_outlined),
+          _DashLink('My Profile & Availability', 'volunteers', Icons.person_outline),
         ];
       case 'Coordinator':
       case 'Admin':
         return [
-          _DashLink('Volunteers', 'volunteers'),
-          _DashLink('Incidents', 'incidents'),
-          _DashLink('AI Matches', 'matches'),
-          _DashLink('Assignments', 'assignments'),
-          _DashLink('Resources & supplies', 'resources'),
-          _DashLink('Resource reports', 'resource_reports'),
+          _DashLink('Volunteers', 'volunteers', Icons.people_outline),
+          _DashLink('Incidents', 'incidents', Icons.warning_amber_rounded),
+          _DashLink('Matches', 'matches', Icons.handshake_outlined),
+          _DashLink('Assignments', 'assignments', Icons.assignment_outlined),
+          _DashLink('Resources & Supplies', 'resources', Icons.inventory_2_outlined),
+          _DashLink('Resource Reports', 'resource_reports', Icons.bar_chart_rounded),
         ];
-      default:
-        return [_DashLink('Report an incident', 'incidents_new')];
+      default: // Requester
+        return [
+          _DashLink('Report an Incident', 'incidents_new', Icons.add_alert_outlined),
+        ];
     }
   }
 
@@ -81,8 +84,9 @@ class DashboardScreen extends StatelessWidget {
         );
         break;
       default:
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Not built yet')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Feature coming soon.')),
+        );
     }
   }
 
@@ -98,45 +102,148 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F5F7),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF14181F),
-        title: const Text('DVC'),
+        backgroundColor: AppTheme.background,
+        elevation: 0,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.primary,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Text(
+                'DVC',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Disaster Aid System',
+              style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
+            ),
+          ],
+        ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         children: [
-          Text(
-            'Welcome, ${user.fullName}',
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF1B2430),
+          // Welcome User Banner
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E293B), Color(0xFF151E32)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.border),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 26,
+                  backgroundColor: AppTheme.primary,
+                  child: Text(
+                    user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'U',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome, ${user.fullName}',
+                        style: const TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
+                        ),
+                        child: Text(
+                          user.role,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Signed in as ${user.role}',
-            style: const TextStyle(color: Color(0xFF5B6472), fontSize: 14),
-          ),
           const SizedBox(height: 24),
+          const Text(
+            'COORDINATION MODULES',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.1,
+              color: AppTheme.textMuted,
+            ),
+          ),
+          const SizedBox(height: 12),
           ..._links.map(
             (link) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: InkWell(
-                onTap: () => _navigate(context, link.key),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: const Color(0xFFE2E5E9)),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    link.label,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1B2430),
+              child: Card(
+                color: AppTheme.surface,
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () => _navigate(context, link.key),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(link.icon, color: AppTheme.primary, size: 22),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            link.label,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 16,
+                          color: AppTheme.textMuted,
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -144,9 +251,15 @@ class DashboardScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          OutlinedButton(
+          OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.danger,
+              side: const BorderSide(color: AppTheme.danger),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
             onPressed: () => _logout(context),
-            child: const Text('Sign out'),
+            icon: const Icon(Icons.logout),
+            label: const Text('Sign Out'),
           ),
         ],
       ),
@@ -157,6 +270,7 @@ class DashboardScreen extends StatelessWidget {
 class _DashLink {
   final String label;
   final String key;
+  final IconData icon;
 
-  _DashLink(this.label, this.key);
+  _DashLink(this.label, this.key, this.icon);
 }
