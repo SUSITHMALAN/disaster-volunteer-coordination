@@ -35,9 +35,11 @@ export default function MatchesPage() {
 
     try {
       const data = await getIncidents();
+
       setIncidents(data || []);
     } catch (err) {
       setIncidentError(err.message || "Failed to load incidents.");
+
       setIncidents([]);
     } finally {
       setLoadingIncidents(false);
@@ -55,13 +57,19 @@ export default function MatchesPage() {
   }
 
   return (
-    <div className="matches-page">
-      
-      <h1 className="matches-page__title">Volunteer Matches</h1>
+    <main className="matches-page">
+      <header className="matches-page__header">
+        <div>
+          <p className="matches-page__eyebrow">VOLUNTEER COORDINATION</p>
 
-      <p className="matches-page__subtitle">
-        Select an incident to view its ranked volunteer matches.
-      </p>
+          <h1 className="matches-page__title">Volunteer Matches</h1>
+
+          <p className="matches-page__subtitle">
+            Select an incident to review its ranked volunteer matches and create
+            assignments.
+          </p>
+        </div>
+      </header>
 
       <form className="matches-page__form" onSubmit={handleSubmit}>
         <label className="matches-page__field">
@@ -102,12 +110,14 @@ export default function MatchesPage() {
           </div>
         )}
 
-        <button type="submit" disabled={!incidentId || loadingIncidents}>
-          View Matches
-        </button>
+        <div className="matches-page__actions">
+          <button type="submit" disabled={!incidentId || loadingIncidents}>
+            View Matches
+          </button>
+        </div>
       </form>
 
       {submittedId && <MatchesPanel incidentId={submittedId} />}
-    </div>
+    </main>
   );
 }
