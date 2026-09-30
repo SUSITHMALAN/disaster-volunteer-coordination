@@ -12,8 +12,25 @@ class VolunteerService {
     return (response as List).map((v) => Volunteer.fromJson(v)).toList();
   }
 
+  static Future<Volunteer?> getVolunteerById(String id) async {
+    try {
+      final response = await ApiClient.get('/api/Volunteers/$id');
+      if (response == null) return null;
+      return Volunteer.fromJson(response);
+    } catch (_) {
+      return null;
+    }
+  }
+
   static Future<void> updateAvailability(String id, bool isAvailable) async {
     await ApiClient.patch('/api/Volunteers/$id/availability', {
+      'isAvailable': isAvailable,
+    });
+  }
+
+  static Future<void> updateProfile(String id, List<String> skills, bool isAvailable) async {
+    await ApiClient.patch('/api/Volunteers/$id/profile', {
+      'skills': skills,
       'isAvailable': isAvailable,
     });
   }

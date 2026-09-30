@@ -11,6 +11,7 @@ import 'matches_screen.dart';
 import 'report_incident_screen.dart';
 import 'resource_reports_screen.dart';
 import 'resources_screen.dart';
+import 'volunteer_profile_screen.dart';
 import 'volunteers_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -23,7 +24,7 @@ class DashboardScreen extends StatelessWidget {
       case 'Volunteer':
         return [
           _DashLink('My Assigned Tasks', 'assigned_tasks', Icons.assignment_turned_in_outlined),
-          _DashLink('My Profile & Availability', 'volunteers', Icons.person_outline),
+          _DashLink('My Profile & Availability', 'volunteer_profile', Icons.person_outline),
         ];
       case 'Coordinator':
       case 'Admin':
@@ -56,6 +57,11 @@ class DashboardScreen extends StatelessWidget {
       case 'assigned_tasks':
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => AssignedTasksScreen(user: user)),
+        );
+        break;
+      case 'volunteer_profile':
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => VolunteerProfileScreen(user: user)),
         );
         break;
       case 'resources':
