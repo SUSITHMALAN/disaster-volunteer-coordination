@@ -16,6 +16,7 @@ export default function Register() {
   const [submitting, setSubmitting] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -38,9 +39,16 @@ export default function Register() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
-        <BackButton to="/login" label="Back to Sign in" className="dvc-back-btn--compact" style={{ alignSelf: "flex-start", marginBottom: "8px" }} />
+        <BackButton
+          to="/login"
+          label="Back to Sign in"
+          className="dvc-back-btn--compact"
+          style={{ alignSelf: "flex-start", marginBottom: "8px" }}
+        />
         <h1 className="auth-form__title">Join the mission</h1>
-        <p className="auth-form__subtitle">Create your account to start coordinating</p>
+        <p className="auth-form__subtitle">
+          Create your account to start coordinating
+        </p>
 
         <label className="auth-form__label">
           Full name
@@ -66,21 +74,34 @@ export default function Register() {
 
         <label className="auth-form__label">
           Password
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Min. 8 characters"
-            required
-            minLength={8}
-          />
+          <div className="auth-form__password-wrap">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Min. 8 characters"
+              required
+              minLength={8}
+            />
+
+            <button
+              type="button"
+              className="auth-form__password-toggle"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
         </label>
 
         <label className="auth-form__label">
           I am a
           <select value={role} onChange={(e) => setRole(e.target.value)}>
             {ROLES.map((r) => (
-              <option key={r} value={r}>{r}</option>
+              <option key={r} value={r}>
+                {r}
+              </option>
             ))}
           </select>
         </label>
@@ -99,7 +120,11 @@ export default function Register() {
 
         {error && <p className="auth-form__error">{error}</p>}
 
-        <button className="auth-form__submit" type="submit" disabled={submitting}>
+        <button
+          className="auth-form__submit"
+          type="submit"
+          disabled={submitting}
+        >
           {submitting ? "Creating account…" : "Create account"}
         </button>
 

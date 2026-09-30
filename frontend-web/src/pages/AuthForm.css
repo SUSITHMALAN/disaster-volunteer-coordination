@@ -226,3 +226,45 @@
   color: var(--color-relief-hover);
   text-decoration: underline;
 }
+
+.auth-form__password-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.auth-form__password-wrap input {
+  width: 100%;
+  padding-right: 70px;
+  box-sizing: border-box;
+}
+
+.auth-form__password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+
+  transform: translateY(-50%);
+
+  border: none;
+  background: transparent;
+
+  color: var(--color-text-muted);
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  padding: 4px;
+}
+
+.auth-form__password-toggle:hover {
+  color: var(--color-text);
+}
+
+.auth-form__password-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

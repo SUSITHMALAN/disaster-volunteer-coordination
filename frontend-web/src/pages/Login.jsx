@@ -10,6 +10,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -29,7 +30,9 @@ export default function Login() {
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
         <h1 className="auth-form__title">Welcome back</h1>
-        <p className="auth-form__subtitle">Sign in to your volunteer dashboard</p>
+        <p className="auth-form__subtitle">
+          Sign in to your volunteer dashboard
+        </p>
 
         <label className="auth-form__label">
           Email
@@ -44,18 +47,33 @@ export default function Login() {
 
         <label className="auth-form__label">
           Password
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-          />
+          <div className="auth-form__password-wrap">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+
+            <button
+              type="button"
+              className="auth-form__password-toggle"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
         </label>
 
         {error && <p className="auth-form__error">{error}</p>}
 
-        <button className="auth-form__submit" type="submit" disabled={submitting}>
+        <button
+          className="auth-form__submit"
+          type="submit"
+          disabled={submitting}
+        >
           {submitting ? "Signing in…" : "Sign in"}
         </button>
 
