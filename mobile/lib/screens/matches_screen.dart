@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/incident_service.dart';
 import '../services/matches_service.dart';
 import '../models/incident_summary.dart';
+import '../theme/app_theme.dart';
 
 class MatchesScreen extends StatefulWidget {
   const MatchesScreen({super.key});
@@ -79,7 +80,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
       await MatchesService.triggerMatchingAgent(_selectedIncidentId!);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('AI Matching Agent triggered successfully!')),
+          const SnackBar(content: Text('Matching Agent triggered successfully!')),
         );
       }
       await _loadMatches(_selectedIncidentId!);
@@ -117,10 +118,11 @@ class _MatchesScreenState extends State<MatchesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('AI Volunteer Matches'),
-        backgroundColor: const Color(0xFF14181F),
-        foregroundColor: Colors.white,
+        title: const Text('Matches'),
+        backgroundColor: AppTheme.background,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -142,17 +144,18 @@ class _MatchesScreenState extends State<MatchesScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   const Text(
-                    'Select an incident to view AI match recommendations or run the matching agent.',
-                    style: TextStyle(fontSize: 14, color: Color(0xFF5B6472)),
+                    'Select an incident to view match recommendations or run the matching agent.',
+                    style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
                   ),
                   const SizedBox(height: 16),
                   if (_incidents.isNotEmpty)
                     DropdownButtonFormField<String>(
+                      isExpanded: true, // Fix layout overflow
                       initialValue: _selectedIncidentId,
+                      dropdownColor: AppTheme.surface,
                       decoration: const InputDecoration(
                         labelText: 'Select Incident',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       ),
                       items: _incidents.map((inc) {
                         return DropdownMenuItem<String>(
@@ -160,6 +163,8 @@ class _MatchesScreenState extends State<MatchesScreen> {
                           child: Text(
                             inc.title,
                             overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: const TextStyle(color: AppTheme.textPrimary),
                           ),
                         );
                       }).toList(),
@@ -173,9 +178,12 @@ class _MatchesScreenState extends State<MatchesScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFB8722E),
+                      backgroundColor: AppTheme.primaryButton,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     onPressed: _triggeringAgent ? null : _triggerAgent,
                     icon: _triggeringAgent
@@ -185,15 +193,15 @@ class _MatchesScreenState extends State<MatchesScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
                         : const Icon(Icons.auto_awesome),
-                    label: Text(_triggeringAgent ? 'Running AI Agent...' : 'Run AI Matching Agent'),
+                    label: Text(_triggeringAgent ? 'Running Agent...' : 'Run Matching Agent'),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   if (_error != null)
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: Text(
                         _error!,
-                        style: const TextStyle(color: Colors.red),
+                        style: const TextStyle(color: AppTheme.danger),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -208,16 +216,26 @@ class _MatchesScreenState extends State<MatchesScreen> {
                     const Padding(
                       padding: EdgeInsets.all(32),
                       child: Text(
-                        'No matches found for this incident. Tap "Run AI Matching Agent" above.',
+                        'No matches found for this incident. Tap "Run Matching Agent" above.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey),
+                        style: TextStyle(color: AppTheme.textMuted),
                       ),
                     )
                   else
                     ..._matches.map((match) {
-                      final scorePercent = (match.matchScore * 100).round();
+                      final scoreVal = match.matchScore > 1.0 ? match.matchScore : match.matchScore * 100.0;
+                      final scorePercent = scoreVal.round().clamp(0, 100);
+                      final displayName = match.volunteerName?.isNotEmpty == true
+                          ? match.volunteerName!
+                          : (match.volunteerId.length > 8 ? '${match.volunteerId.substring(0, 8)}...' : match.volunteerId);
+
                       return Card(
+                        color: AppTheme.surface,
                         margin: const EdgeInsets.only(bottom: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: AppTheme.border),
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: Column(
@@ -228,41 +246,72 @@ class _MatchesScreenState extends State<MatchesScreen> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      'Volunteer: ${match.volunteerId.length > 8 ? match.volunteerId.substring(0, 8) : match.volunteerId}...',
+                                      displayName,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16,
+                                        color: AppTheme.textPrimary,
                                       ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: scorePercent >= 70 ? Colors.green.shade100 : Colors.orange.shade100,
-                                      borderRadius: BorderRadius.circular(4),
+                                      color: scorePercent >= 70
+                                          ? AppTheme.emerald.withValues(alpha: 0.2)
+                                          : AppTheme.amber.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: scorePercent >= 70 ? AppTheme.emerald : AppTheme.amber,
+                                        width: 1,
+                                      ),
                                     ),
                                     child: Text(
                                       '$scorePercent% Match',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: scorePercent >= 70 ? Colors.green.shade800 : Colors.orange.shade900,
+                                        color: scorePercent >= 70 ? AppTheme.emerald : AppTheme.amber,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              Text('Role: ${match.recommendedRole}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                              const SizedBox(height: 4),
-                              Text(match.reasoning, style: const TextStyle(color: Color(0xFF4A5568))),
+                              Text(
+                                match.reasoning,
+                                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                              ),
                               const SizedBox(height: 12),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: OutlinedButton.icon(
-                                  onPressed: () => _assignVolunteer(match),
-                                  icon: const Icon(Icons.person_add),
-                                  label: const Text('Assign Volunteer'),
-                                ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.backgroundAlt,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      'Status: ${match.status}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppTheme.textMuted,
+                                      ),
+                                    ),
+                                  ),
+                                  OutlinedButton.icon(
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: AppTheme.primary,
+                                      side: const BorderSide(color: AppTheme.primary),
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    ),
+                                    onPressed: () => _assignVolunteer(match),
+                                    icon: const Icon(Icons.person_add, size: 18),
+                                    label: const Text('Assign Volunteer'),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

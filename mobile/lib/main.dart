@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'screens/login_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const DvcApp());
@@ -14,11 +15,7 @@ class DvcApp extends StatelessWidget {
     return MaterialApp(
       title: 'Disaster Volunteer Coordination',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: const Color(0xFFB8722E),
-        scaffoldBackgroundColor: const Color(0xFFF4F5F7),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.darkTheme,
       home: const _StartupGate(),
     );
   }
