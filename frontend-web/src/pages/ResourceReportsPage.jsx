@@ -373,23 +373,27 @@ export default function ResourceReportsPage() {
                     <tbody>
                       {shortageItems.map((item, index) => (
                         <tr key={item.id || item.resourceId || index}>
-                          <td>
+                          <td data-label="Resource">
                             <strong>{getResourceName(item)}</strong>
                           </td>
 
-                          <td>{getCategoryLabel(item.category)}</td>
+                          <td data-label="Category">
+                            {getCategoryLabel(item.category)}
+                          </td>
 
-                          <td>{getNeededQuantity(item)}</td>
+                          <td data-label="Needed">{getNeededQuantity(item)}</td>
 
-                          <td>{getAvailableQuantity(item)}</td>
+                          <td data-label="Available">
+                            {getAvailableQuantity(item)}
+                          </td>
 
-                          <td>{getUsedQuantity(item)}</td>
+                          <td data-label="Used">{getUsedQuantity(item)}</td>
 
-                          <td className="text-danger">
+                          <td data-label="Shortage" className="text-danger">
                             <strong>+{getShortageQuantity(item)}</strong>
                           </td>
 
-                          <td>{item.unit || "units"}</td>
+                          <td data-label="Unit">{item.unit || "units"}</td>
                         </tr>
                       ))}
                     </tbody>

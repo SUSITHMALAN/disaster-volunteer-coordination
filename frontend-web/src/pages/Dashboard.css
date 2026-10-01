@@ -159,3 +159,91 @@
 .dashboard__map-section {
   margin-bottom: 40px;
 }
+
+/* ── Mobile Dashboard ── */
+
+@media (max-width: 700px) {
+  .dashboard {
+    width: 100%;
+    max-width: 100%;
+
+    padding: 1.5rem 1rem 2.5rem;
+
+    overflow-x: hidden;
+  }
+
+  .dashboard__welcome {
+    margin-bottom: 2rem;
+  }
+
+  .dashboard__greeting {
+    font-size: 0.72rem;
+  }
+
+  .dashboard__title {
+    font-size: 2rem;
+    line-height: 1.15;
+
+    overflow-wrap: anywhere;
+  }
+
+  .dashboard__role {
+    margin-top: 0.75rem;
+
+    padding: 0.4rem 0.75rem;
+
+    font-size: 0.78rem;
+  }
+
+  .dashboard__section-label {
+    margin-bottom: 0.8rem;
+
+    font-size: 0.72rem;
+  }
+
+  .dashboard__links {
+    grid-template-columns: 1fr;
+
+    gap: 0.75rem;
+
+    margin-bottom: 2rem;
+  }
+
+  .dashboard__link {
+    width: 100%;
+
+    gap: 0.85rem;
+
+    padding: 1rem;
+
+    min-height: 72px;
+
+    border-radius: var(--radius-lg);
+
+    font-size: 0.95rem;
+  }
+
+  .dashboard__link-icon {
+    width: 42px;
+    height: 42px;
+
+    font-size: 1.25rem;
+  }
+
+  .dashboard__map-section {
+    width: 100%;
+
+    margin-bottom: 2rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .dashboard {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+
+  .dashboard__title {
+    font-size: 1.85rem;
+  }
+}
