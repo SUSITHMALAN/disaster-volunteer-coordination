@@ -704,41 +704,129 @@
 
 /* Small phones */
 
-@media (max-width: 450px) {
-  .resource-report-row {
-    grid-template-columns: 1fr;
+@media (max-width: 700px) {
+  .reports-page {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    padding: 1.25rem 1rem 2.5rem;
+
+    overflow-x: hidden;
   }
 
-  .resource-report-row__resource {
-    grid-column: auto;
+  .reports-page__header {
+    width: 100%;
+    min-width: 0;
+
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 1rem;
+  }
+
+  .reports-page__header > div {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .reports-page__eyebrow {
+    font-size: 0.68rem;
+  }
+
+  .reports-page__title {
+    width: 100%;
+    max-width: 100%;
+
+    font-size: 1.7rem;
+    line-height: 1.15;
+
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .reports-page__subtitle {
+    width: 100%;
+    max-width: 100%;
+
+    font-size: 0.85rem;
+    line-height: 1.55;
+
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .reports-page__refresh {
+    width: auto;
+    align-self: flex-start;
+
+    padding: 0.65rem 1rem;
+  }
+
+  .reports-tabs {
+    width: 100%;
+    max-width: 100%;
+
+    gap: 0;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scrollbar-width: thin;
+  }
+
+  .tab-btn {
+    flex: 0 0 auto;
+
+    padding: 0.7rem 0.9rem;
+
+    font-size: 0.82rem;
+
+    white-space: nowrap;
+  }
+
+  .pane-title {
+    font-size: 1.1rem;
+    line-height: 1.3;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .summary-card {
+    width: 100%;
+    min-width: 0;
+
+    padding: 1rem;
+  }
+
+  .summary-card__header {
+    gap: 0.75rem;
+  }
+
+  .summary-card__header h3 {
+    font-size: 1rem;
   }
 
   .summary-card__metrics {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 1rem 0.75rem;
   }
-}
 
-.reports-page {
-  max-width: 1500px;
-}
+  .summary-card__metrics div {
+    min-width: 0;
 
-.incident-resource-table__header {
-  color: var(--color-text-secondary);
-}
+    padding: 0.65rem;
 
-.report-info-note {
-  margin-top: 1rem;
-  padding: 0.85rem 1rem;
+    border-radius: var(--radius-md);
 
-  background: rgba(59, 130, 246, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 0.6rem;
+    background: var(--color-surface);
+  }
 
-  color: var(--color-text-secondary);
-  font-size: 0.82rem;
-  line-height: 1.5;
-}
-
-.report-info-note strong {
-  color: var(--color-text);
+  .summary-card__metrics strong {
+    font-size: 1rem;
+  }
 }

@@ -526,43 +526,131 @@
 
 @media (max-width: 700px) {
   .assignments-page {
-    padding: 24px 16px 36px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    padding: 1.25rem 1rem 2.5rem;
+
+    overflow-x: hidden;
   }
 
   .assignments-page__header {
-    align-items: flex-start;
+    width: 100%;
+    min-width: 0;
+
     flex-direction: column;
-    gap: 14px;
+    align-items: flex-start;
+
+    gap: 1rem;
+
+    margin: 0 0 1.25rem;
+  }
+
+  .assignments-page__header > div {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .assignments-page__eyebrow {
+    font-size: 0.68rem;
+  }
+
+  .assignments-page__title {
+    width: 100%;
+    max-width: 100%;
+
+    font-size: 1.75rem;
+    line-height: 1.15;
+
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .assignments-page__subtitle {
+    width: 100%;
+    max-width: 100%;
+
+    margin-top: 0.45rem;
+
+    font-size: 0.85rem;
+    line-height: 1.5;
+
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .assignments-page__refresh {
+    width: auto;
   }
 
   .assignments-page__filters {
+    width: 100%;
+
     flex-direction: column;
+
+    gap: 1rem;
+
+    padding: 1rem;
   }
 
   .assignments-page__filters label {
+    width: 100%;
     min-width: 0;
+  }
+
+  .assignments-page__filters select,
+  .assignments-page__filters input {
     width: 100%;
   }
 
+  .assignments-section__header {
+    width: 100%;
+
+    align-items: flex-start;
+    flex-direction: column;
+
+    gap: 0.75rem;
+  }
+
   .assignments-board {
+    width: 100%;
+
     grid-template-columns: 1fr;
+
+    gap: 1rem;
   }
 
   .assignment-column {
+    width: 100%;
+    min-width: 0;
     min-height: 0;
   }
 
-  .assignments-section__header,
-  .assignment-history__header {
-    flex-direction: column;
-    align-items: flex-start;
+  .assignment-history {
+    width: 100%;
+
+    padding: 1rem;
   }
 
-  .assignment-history {
-    padding: 1rem;
+  .assignment-history__header {
+    align-items: flex-start;
+    flex-direction: column;
+
+    gap: 0.75rem;
   }
 
   .assignment-history__list {
     grid-template-columns: 1fr;
+  }
+
+  .history-card {
+    min-width: 0;
+  }
+
+  .history-main h3 {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
   }
 }
