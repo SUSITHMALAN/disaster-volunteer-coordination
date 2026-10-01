@@ -560,6 +560,31 @@ function AppRoutes() {
   );
 }
 
+function AppFooter() {
+  const location = useLocation();
+
+  const isAuthPage =
+    location.pathname === "/login" || location.pathname === "/register";
+
+  if (isAuthPage) {
+    return null;
+  }
+
+  return (
+    <footer className="app-footer">
+      <div className="app-footer__brand">
+        <span className="app-footer__mark">DVC</span>
+
+        <span>Disaster Volunteer Coordination</span>
+      </div>
+
+      <div className="app-footer__meta">
+        © {new Date().getFullYear()} SEF Project
+      </div>
+    </footer>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -568,6 +593,8 @@ function App() {
           <NavigationHeader />
 
           <AppRoutes />
+
+          <AppFooter />
         </div>
       </AuthProvider>
     </BrowserRouter>

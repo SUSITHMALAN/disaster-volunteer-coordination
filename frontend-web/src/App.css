@@ -641,3 +641,64 @@
       translateY(0);
   }
 }
+
+/* ── Footer ── */
+
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  margin-top: auto;
+
+  padding: 1rem 1.5rem;
+
+  border-top: 1px solid var(--color-border);
+
+  background: var(--color-header);
+
+  color: var(--color-text-muted);
+
+  font-size: 0.75rem;
+}
+
+.app-footer__brand {
+  display: flex;
+  align-items: center;
+
+  gap: 0.5rem;
+}
+
+.app-footer__mark {
+  font-family: var(--font-display);
+
+  font-size: 0.9rem;
+  font-weight: 700;
+
+  background: var(--gradient-hero);
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  background-clip: text;
+}
+
+.app-footer__meta {
+  text-align: right;
+}
+
+@media (max-width: 600px) {
+  .app-footer {
+    flex-direction: column;
+
+    padding: 1rem;
+
+    text-align: center;
+  }
+
+  .app-footer__meta {
+    text-align: center;
+  }
+}
