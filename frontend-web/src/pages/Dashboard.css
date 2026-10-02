@@ -1,7 +1,8 @@
 /* ── Dashboard Layout ── */
 .dashboard {
   padding: 48px 40px 80px;
-  max-width: 1080px;
+  width: 100%;
+  max-width: 1280px;
   margin: 0 auto;
   animation: fadeInUp 0.5s var(--ease-out) both;
 }

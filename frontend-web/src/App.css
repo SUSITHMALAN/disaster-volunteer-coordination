@@ -453,10 +453,6 @@
   }
 
   .app-header__back-btn {
-    padding: 6px 10px;
-  }
-
-  .app-header__back-btn span {
     display: none;
   }
 

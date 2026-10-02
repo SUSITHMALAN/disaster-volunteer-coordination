@@ -5,7 +5,6 @@ import {
   Navigate,
   Link,
   useLocation,
-  useNavigate,
 } from "react-router-dom";
 
 import { useEffect, useState } from "react";
@@ -43,7 +42,6 @@ function NavigationHeader() {
   const { user, logout } = useAuth();
 
   const location = useLocation();
-  const navigate = useNavigate();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -73,14 +71,6 @@ function NavigationHeader() {
     localStorage.setItem("dvc-theme", theme);
   }, [theme]);
 
-  function handleBack() {
-    if (window.history.state && window.history.state.idx > 0) {
-      navigate(-1);
-    } else {
-      navigate("/");
-    }
-  }
-
   function handleLogout() {
     setMobileMenuOpen(false);
     logout();
@@ -105,29 +95,6 @@ function NavigationHeader() {
 
         {user && !isAuthPage && (
           <div className="app-header__center">
-            {!isDashboard && (
-              <button
-                type="button"
-                className="app-header__back-btn"
-                onClick={handleBack}
-                title="Go back to previous page"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  aria-hidden="true"
-                >
-                  <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
-
-                <span>Back</span>
-              </button>
-            )}
-
             <nav className="app-header__nav">
               <Link
                 to="/"
