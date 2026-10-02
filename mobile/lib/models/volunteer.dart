@@ -8,6 +8,8 @@ class Volunteer {
   final int activeAssignments;
   final List<String> certifications;
   final String comfortTier;
+  final DateTime? availabilityStartUtc;
+  final DateTime? availabilityEndUtc;
 
   Volunteer({
     required this.id,
@@ -19,6 +21,8 @@ class Volunteer {
     this.activeAssignments = 0,
     this.certifications = const [],
     this.comfortTier = 'Moderate',
+    this.availabilityStartUtc,
+    this.availabilityEndUtc,
   });
 
   factory Volunteer.fromJson(Map<String, dynamic> json) {
@@ -32,6 +36,12 @@ class Volunteer {
       activeAssignments: json['activeAssignments'] ?? 0,
       certifications: List<String>.from(json['certifications'] ?? []),
       comfortTier: (json['comfortTier'] ?? 'Moderate').toString(),
+      availabilityStartUtc: DateTime.tryParse(
+        (json['availabilityStartUtc'] ?? '').toString(),
+      ),
+      availabilityEndUtc: DateTime.tryParse(
+        (json['availabilityEndUtc'] ?? '').toString(),
+      ),
     );
   }
 }
