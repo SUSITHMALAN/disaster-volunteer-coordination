@@ -12,14 +12,23 @@ import { useEffect, useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 import Login from "./pages/Login";
+
 import Register from "./pages/Register";
+
 import Dashboard from "./pages/Dashboard";
+
 import VolunteersPage from "./pages/VolunteersPage";
+
 import MatchesPage from "./pages/MatchesPage.jsx";
+
 import IncidentsPage from "./pages/IncidentsPage";
+
 import ReportIncidentPage from "./pages/ReportIncidentPage";
+
 import AssignmentsPage from "./pages/AssignmentsPage";
+
 import ResourcesPage from "./pages/ResourcesPage";
+
 import ResourceReportsPage from "./pages/ResourceReportsPage";
 
 import "./App.css";
@@ -45,6 +54,8 @@ function NavigationHeader() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem("dvc-theme");
 
@@ -60,20 +71,30 @@ function NavigationHeader() {
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/register";
 
-  const isDashboard = location.pathname === "/";
-
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
+
     localStorage.setItem("dvc-theme", theme);
   }, [theme]);
 
   function handleLogout() {
+    setShowLogoutConfirm(true);
+  }
+
+  function confirmLogout() {
+    setShowLogoutConfirm(false);
+
     setMobileMenuOpen(false);
+
     logout();
+  }
+
+  function cancelLogout() {
+    setShowLogoutConfirm(false);
   }
 
   function toggleTheme() {
@@ -229,13 +250,21 @@ function NavigationHeader() {
                 aria-hidden="true"
               >
                 <circle cx="12" cy="12" r="4" />
+
                 <path d="M12 2v2" />
+
                 <path d="M12 20v2" />
+
                 <path d="m4.93 4.93 1.42 1.42" />
+
                 <path d="m17.66 17.66 1.41 1.41" />
+
                 <path d="M2 12h2" />
+
                 <path d="M20 12h2" />
+
                 <path d="m6.34 17.66-1.41 1.41" />
+
                 <path d="m19.07 4.93-1.41 1.42" />
               </svg>
             ) : (
@@ -430,6 +459,45 @@ function NavigationHeader() {
             Sign out
           </button>
         </nav>
+      )}
+
+      {showLogoutConfirm && (
+        <div className="logout-modal-backdrop" onClick={cancelLogout}>
+          <div
+            className="logout-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="logout-confirm-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="logout-modal__icon">↪</div>
+
+            <h2 id="logout-confirm-title">Sign out?</h2>
+
+            <p>
+              Are you sure you want to sign out of Disaster Volunteer
+              Coordination?
+            </p>
+
+            <div className="logout-modal__actions">
+              <button
+                type="button"
+                className="logout-modal__cancel"
+                onClick={cancelLogout}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="logout-modal__confirm"
+                onClick={confirmLogout}
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
