@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/incident_summary.dart';
 import '../models/resource.dart';
 import '../services/incident_service.dart';
+import '../theme/app_theme.dart';
 
 class ResourceFilters extends StatefulWidget {
   final String? incidentId;
@@ -28,6 +29,7 @@ class ResourceFilters extends StatefulWidget {
 
 class _ResourceFiltersState extends State<ResourceFilters> {
   List<IncidentSummary> _incidents = [];
+
   bool _loading = true;
   String? _error;
 
@@ -42,111 +44,242 @@ class _ResourceFiltersState extends State<ResourceFilters> {
       _loading = true;
       _error = null;
     });
+
     try {
       final data = await IncidentService.getIncidentSummaries();
-      if (mounted) {
-        setState(() => _incidents = data);
-        widget.onIncidentsLoaded?.call(data);
-      }
-    } catch (error) {
-      if (mounted) setState(() => _error = '$error');
+
+      if (!mounted) return;
+
+      setState(() {
+        _incidents = data;
+      });
+
+      widget.onIncidentsLoaded?.call(data);
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        _error = 'Unable to load incident choices.';
+      });
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
+  InputDecoration _decoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+      filled: true,
+      fillColor: AppTheme.backgroundAlt,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(11),
+        borderSide: const BorderSide(color: AppTheme.border),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(11),
+        borderSide: const BorderSide(color: AppTheme.primary),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      DropdownButtonFormField<String>(
-        key: ValueKey('incident-${widget.incidentId}'),
-        initialValue: widget.incidentId ?? '',
-        isExpanded: true,
-        decoration: InputDecoration(
-          labelText: _loading ? 'Loading incidents…' : 'Incident',
-          border: const OutlineInputBorder(),
-        ),
-        items: [
-          const DropdownMenuItem(value: '', child: Text('All incidents')),
-          if (widget.incidentId != null &&
-              !_incidents.any((i) => i.id == widget.incidentId))
-            DropdownMenuItem(
-              value: widget.incidentId,
-              child: Text(widget.incidentId!, overflow: TextOverflow.ellipsis),
-            ),
-          ..._incidents.map(
-            (i) => DropdownMenuItem(
-              value: i.id,
-              child: Text(i.label, overflow: TextOverflow.ellipsis),
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'FILTER RESOURCES',
+            style: TextStyle(
+              color: AppTheme.textSecondary,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
             ),
           ),
-        ],
-        onChanged: _loading
-            ? null
-            : (value) => widget.onChanged(
-                value == '' ? null : value,
-                widget.category,
-                widget.isShortage,
+
+          const SizedBox(height: 12),
+
+          DropdownButtonFormField<String>(
+            key: ValueKey('incident-${widget.incidentId}'),
+            initialValue: widget.incidentId ?? '',
+            isExpanded: true,
+            dropdownColor: AppTheme.surface,
+            iconEnabledColor: AppTheme.textMuted,
+            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+            decoration: _decoration(
+              _loading ? 'Loading incidents...' : 'Incident',
+            ),
+            items: [
+              const DropdownMenuItem(
+                value: '',
+                child: Text(
+                  'All incidents',
+                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                ),
               ),
-      ),
-      if (_error != null)
-        Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Incident choices: $_error'),
-              TextButton(
-                onPressed: _load,
-                child: const Text('Retry incidents'),
+
+              if (widget.incidentId != null &&
+                  !_incidents.any(
+                    (incident) => incident.id == widget.incidentId,
+                  ))
+                DropdownMenuItem(
+                  value: widget.incidentId,
+                  child: Text(
+                    widget.incidentId!,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+
+              ..._incidents.map(
+                (incident) => DropdownMenuItem(
+                  value: incident.id,
+                  child: Text(
+                    incident.label,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
               ),
             ],
+            onChanged: _loading
+                ? null
+                : (value) {
+                    widget.onChanged(
+                      value == '' ? null : value,
+                      widget.category,
+                      widget.isShortage,
+                    );
+                  },
           ),
-        ),
-      const SizedBox(height: 12),
-      DropdownButtonFormField<String>(
-        initialValue: widget.category?.apiValue ?? '',
-        key: ValueKey('category-${widget.category}'),
-        decoration: const InputDecoration(
-          labelText: 'Category',
-          border: OutlineInputBorder(),
-        ),
-        items: [
-          const DropdownMenuItem(value: '', child: Text('All categories')),
-          ...ResourceCategory.values.map(
-            (c) => DropdownMenuItem(value: c.apiValue, child: Text(c.label)),
-          ),
-        ],
-        onChanged: (value) => widget.onChanged(
-          widget.incidentId,
-          value == null || value.isEmpty
-              ? null
-              : ResourceCategory.fromJson(value),
-          widget.isShortage,
-        ),
-      ),
-      if (widget.showShortage) ...[
-        const SizedBox(height: 12),
-        DropdownButtonFormField<String>(
-          initialValue: widget.isShortage?.toString() ?? '',
-          key: ValueKey('shortage-${widget.isShortage}'),
-          decoration: const InputDecoration(
-            labelText: 'Supply status',
-            border: OutlineInputBorder(),
-          ),
-          items: const [
-            DropdownMenuItem(value: '', child: Text('All resources')),
-            DropdownMenuItem(value: 'true', child: Text('Shortages only')),
-            DropdownMenuItem(value: 'false', child: Text('No shortage')),
+
+          if (_error != null) ...[
+            const SizedBox(height: 8),
+
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _error!,
+                    style: const TextStyle(
+                      color: AppTheme.danger,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+
+                TextButton(onPressed: _load, child: const Text('Retry')),
+              ],
+            ),
           ],
-          onChanged: (value) => widget.onChanged(
-            widget.incidentId,
-            widget.category,
-            value == '' || value == null ? null : value == 'true',
+
+          const SizedBox(height: 12),
+
+          DropdownButtonFormField<String>(
+            initialValue: widget.category?.apiValue ?? '',
+            key: ValueKey('category-${widget.category}'),
+            isExpanded: true,
+            dropdownColor: AppTheme.surface,
+            iconEnabledColor: AppTheme.textMuted,
+            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+            decoration: _decoration('Category'),
+            items: [
+              const DropdownMenuItem(
+                value: '',
+                child: Text(
+                  'All categories',
+                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                ),
+              ),
+
+              ...ResourceCategory.values.map(
+                (category) => DropdownMenuItem(
+                  value: category.apiValue,
+                  child: Text(
+                    category.label,
+                    style: const TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            onChanged: (value) {
+              widget.onChanged(
+                widget.incidentId,
+                value == null || value.isEmpty
+                    ? null
+                    : ResourceCategory.fromJson(value),
+                widget.isShortage,
+              );
+            },
           ),
-        ),
-      ],
-    ],
-  );
+
+          if (widget.showShortage) ...[
+            const SizedBox(height: 12),
+
+            DropdownButtonFormField<String>(
+              initialValue: widget.isShortage?.toString() ?? '',
+              key: ValueKey('shortage-${widget.isShortage}'),
+              isExpanded: true,
+              dropdownColor: AppTheme.surface,
+              iconEnabledColor: AppTheme.textMuted,
+              style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+              decoration: _decoration('Supply status'),
+              items: const [
+                DropdownMenuItem(
+                  value: '',
+                  child: Text(
+                    'All resources',
+                    style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'true',
+                  child: Text(
+                    'Shortages only',
+                    style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'false',
+                  child: Text(
+                    'No shortage',
+                    style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                  ),
+                ),
+              ],
+              onChanged: (value) {
+                widget.onChanged(
+                  widget.incidentId,
+                  widget.category,
+                  value == '' || value == null ? null : value == 'true',
+                );
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }
