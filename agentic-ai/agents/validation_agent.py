@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 
@@ -45,32 +45,64 @@ def check_certification(
     incident: dict[str, Any],
     volunteer: dict[str, Any],
 ) -> ValidationResult:
-    """Check that the volunteer has all certifications required by the incident."""
+    """
+    Check that the volunteer has the skills and certifications required
+    by the incident.
+
+    requiredSkills are compared with volunteer skills.
+    requiredCertifications are compared with volunteer certifications.
+    """
+
     required_skills = {
         str(skill).strip().lower()
         for skill in (incident.get("requiredSkills") or [])
         if str(skill).strip()
     }
 
-    certifications = {
+    volunteer_skills = {
+        str(skill).strip().lower()
+        for skill in (volunteer.get("skills") or [])
+        if str(skill).strip()
+    }
+
+    missing_skills = sorted(required_skills - volunteer_skills)
+
+    if missing_skills:
+        return ValidationResult(
+            REJECTED,
+            "certification",
+            f"Volunteer is missing required skills: {', '.join(missing_skills)}.",
+        )
+
+    required_certifications = {
+        str(certification).strip().lower()
+        for certification in (incident.get("requiredCertifications") or [])
+        if str(certification).strip()
+    }
+
+    volunteer_certifications = {
         str(certification).strip().lower()
         for certification in (volunteer.get("certifications") or [])
         if str(certification).strip()
     }
 
-    missing = sorted(required_skills - certifications)
+    missing_certifications = sorted(
+        required_certifications - volunteer_certifications
+    )
 
-    if missing:
+    if missing_certifications:
         return ValidationResult(
             REJECTED,
             "certification",
-            f"Volunteer is missing required certifications: {', '.join(missing)}.",
+            "Volunteer is missing required certifications: "
+            + ", ".join(missing_certifications)
+            + ".",
         )
 
     return ValidationResult(
         APPROVED,
         "certification",
-        "Volunteer has all required certifications.",
+        "Volunteer has the required skills and certifications.",
     )
 
 
@@ -147,7 +179,7 @@ def check_time_window(
     current_time = now or datetime.now(timezone.utc)
     current_time = _ensure_utc(current_time)
 
-    estimated_end = current_time + timedelta_minutes(duration)
+    estimated_end = current_time + timedelta(minutes=duration)
 
     if current_time < availability_start:
         return ValidationResult(
@@ -261,10 +293,3 @@ def _ensure_utc(value: datetime) -> datetime:
         return value.replace(tzinfo=timezone.utc)
 
     return value.astimezone(timezone.utc)
-
-
-def timedelta_minutes(minutes: int):
-    """Create a timedelta without exposing datetime arithmetic to callers."""
-    from datetime import timedelta
-
-    return timedelta(minutes=minutes)
