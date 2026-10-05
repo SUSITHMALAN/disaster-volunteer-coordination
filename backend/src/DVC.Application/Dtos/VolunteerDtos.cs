@@ -52,7 +52,12 @@ namespace DVC.Application.Dtos
 
     public class UpdateProfileRequest
     {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Skills list is required.")]
         public List<string> Skills { get; set; } = new();
+
         public bool IsAvailable { get; set; }
+
+        [System.ComponentModel.DataAnnotations.StringLength(100, ErrorMessage = "LocationZone cannot exceed 100 characters.")]
+        public string? LocationZone { get; set; }
     }
 }
