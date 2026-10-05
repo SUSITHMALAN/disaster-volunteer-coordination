@@ -170,6 +170,46 @@ class TestApiEndpoints(unittest.TestCase):
         self.assertEqual(command.resume["decision"], "approve")
         self.assertEqual(command.resume["feedback"], "Looks good.")
 
+    def test_approve_accepts_forwarded_authorization_header(self):
+        from tools.auth_context import authorization_header
+
+        captured = {}
+
+        def invoke_side_effect(command, config):
+            captured["authorization"] = (
+                authorization_header.get()
+            )
+
+            return {
+                "status": "approved"
+            }
+
+        self.graph_mock.invoke.side_effect = (
+            invoke_side_effect
+        )
+
+        resp = self.client.post(
+            "/workflows/thread-abc/approve",
+            headers={
+                "Authorization":
+                    "Bearer test-token"
+            },
+            json={
+                "decision": "approve",
+                "feedback": "Approved.",
+            },
+        )
+
+        self.assertEqual(
+            resp.status_code,
+            200,
+        )
+
+        self.assertEqual(
+            captured["authorization"],
+            "Bearer test-token",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
