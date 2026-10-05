@@ -69,6 +69,22 @@ class TestScoreCandidate(unittest.TestCase):
         self.assertEqual(scored["score"], round(scored["score"], 4))
 
 
+class TestConfigurableWeights(unittest.TestCase):
+
+    def test_custom_weights_override_scoring(self):
+        vol = make_volunteer(skills=["first-aid"])
+        custom_weights = {"skill": 0.8, "zone": 0.1, "availability": 0.05, "reliability": 0.05}
+        scored = score_candidate(vol, ["first-aid"], zone=None, weights=custom_weights)
+        self.assertAlmostEqual(scored["score"], 1.0, places=2)
+
+    @patch.dict("os.environ", {"SKILL_WEIGHT": "0.7", "ZONE_WEIGHT": "0.1", "AVAILABILITY_WEIGHT": "0.1", "RELIABILITY_WEIGHT": "0.1"})
+    def test_environment_variables_override_defaults(self):
+        from agents.matching_agent import get_matching_weights
+        weights = get_matching_weights()
+        self.assertEqual(weights["skill"], 0.7)
+        self.assertEqual(weights["zone"], 0.1)
+
+
 # ── generate_rationale ────────────────────────────────────────────────────────
 
 class TestGenerateRationale(unittest.TestCase):
