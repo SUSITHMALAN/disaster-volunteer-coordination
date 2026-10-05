@@ -4,25 +4,33 @@ namespace DVC.Application.Services
 {
     /// <summary>
     /// Abstraction over the FastAPI agentic-AI bridge service.
-    /// Implementations call the three REST endpoints exposed by api.py.
+    /// Implementations call the REST endpoints exposed by api.py.
     /// </summary>
     public interface IAgentWorkflowService
     {
         /// <summary>
-        /// Start a new triage + matching + validation + coordinator workflow
-        /// for the given incident.  Returns immediately when the graph pauses
-        /// at the human-approval interrupt.
+        /// Start a new triage + matching + validation + coordinator workflow.
         /// </summary>
-        Task<WorkflowStatusResponse> StartWorkflowAsync(StartWorkflowRequest request, CancellationToken ct = default);
+        Task<WorkflowStatusResponse> StartWorkflowAsync(
+            StartWorkflowRequest request,
+            string? authorizationHeader,
+            CancellationToken ct = default);
 
         /// <summary>
         /// Poll the current state of a running or paused workflow.
         /// </summary>
-        Task<WorkflowStatusResponse> GetWorkflowStatusAsync(string threadId, CancellationToken ct = default);
+        Task<WorkflowStatusResponse> GetWorkflowStatusAsync(
+            string threadId,
+            string? authorizationHeader,
+            CancellationToken ct = default);
 
         /// <summary>
-        /// Resume a workflow that is waiting at the human-approval interrupt.
+        /// Resume a workflow waiting at the human-approval interrupt.
         /// </summary>
-        Task<WorkflowStatusResponse> ApproveWorkflowAsync(string threadId, WorkflowApprovalRequest request, CancellationToken ct = default);
+        Task<WorkflowStatusResponse> ApproveWorkflowAsync(
+            string threadId,
+            WorkflowApprovalRequest request,
+            string? authorizationHeader,
+            CancellationToken ct = default);
     }
 }

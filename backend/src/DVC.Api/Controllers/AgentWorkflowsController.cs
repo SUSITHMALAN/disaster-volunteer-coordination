@@ -28,10 +28,8 @@ namespace DVC.Api.Controllers
 
         /// <summary>
         /// Start a new triage → matching → validation → coordinator workflow
-        /// for a given incident.  The graph will pause at the human-approval
-        /// interrupt; poll GET /api/agentworkflows/{threadId} to check state.
+        /// for a given incident.
         /// </summary>
-        /// <param name="request">Incident ID, raw report text, and optional required skills.</param>
         [HttpPost]
         [Authorize(Roles = "Coordinator,Admin")]
         public async Task<ActionResult<WorkflowStatusResponse>> StartWorkflow(
@@ -39,28 +37,44 @@ namespace DVC.Api.Controllers
             CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(request.IncidentId))
+            {
                 return BadRequest("IncidentId is required.");
+            }
 
             if (string.IsNullOrWhiteSpace(request.RawReportText))
+            {
                 return BadRequest("RawReportText is required.");
+            }
 
             try
             {
-                var result = await _agentWorkflowService.StartWorkflowAsync(request, ct);
+                var authorizationHeader =
+                    Request.Headers.Authorization.ToString();
+
+                var result =
+                    await _agentWorkflowService.StartWorkflowAsync(
+                        request,
+                        authorizationHeader,
+                        ct);
+
                 return Ok(result);
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Agent service unreachable while starting workflow for incident {IncidentId}",
+                _logger.LogError(
+                    ex,
+                    "Agent service unreachable while starting workflow for incident {IncidentId}",
                     request.IncidentId);
-                return StatusCode(503, "The agentic-AI service is currently unavailable. Please try again later.");
+
+                return StatusCode(
+                    503,
+                    "The agentic-AI service is currently unavailable. Please try again later.");
             }
         }
 
         /// <summary>
         /// Poll the current state of a running or paused workflow.
         /// </summary>
-        /// <param name="threadId">The thread ID returned by POST /api/agentworkflows.</param>
         [HttpGet("{threadId}")]
         public async Task<ActionResult<WorkflowStatusResponse>> GetWorkflowStatus(
             string threadId,
@@ -68,17 +82,33 @@ namespace DVC.Api.Controllers
         {
             try
             {
-                var result = await _agentWorkflowService.GetWorkflowStatusAsync(threadId, ct);
+                var authorizationHeader =
+                    Request.Headers.Authorization.ToString();
+
+                var result =
+                    await _agentWorkflowService.GetWorkflowStatusAsync(
+                        threadId,
+                        authorizationHeader,
+                        ct);
+
                 return Ok(result);
             }
-            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            catch (HttpRequestException ex)
+                when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                return NotFound($"Workflow '{threadId}' not found.");
+                return NotFound(
+                    $"Workflow '{threadId}' not found.");
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Agent service unreachable while fetching workflow {ThreadId}", threadId);
-                return StatusCode(503, "The agentic-AI service is currently unavailable.");
+                _logger.LogError(
+                    ex,
+                    "Agent service unreachable while fetching workflow {ThreadId}",
+                    threadId);
+
+                return StatusCode(
+                    503,
+                    "The agentic-AI service is currently unavailable.");
             }
         }
 
@@ -86,8 +116,6 @@ namespace DVC.Api.Controllers
         /// Submit a human approval, rejection, or revision request for a
         /// workflow that is paused at the coordinator interrupt node.
         /// </summary>
-        /// <param name="threadId">The thread ID of the paused workflow.</param>
-        /// <param name="request">Decision ("approve"/"reject"/"revise") and optional feedback.</param>
         [HttpPost("{threadId}/approve")]
         [Authorize(Roles = "Coordinator,Admin")]
         public async Task<ActionResult<WorkflowStatusResponse>> ApproveWorkflow(
@@ -96,21 +124,41 @@ namespace DVC.Api.Controllers
             CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(request.Decision))
-                return BadRequest("Decision is required (approve / reject / revise).");
+            {
+                return BadRequest(
+                    "Decision is required (approve / reject / revise).");
+            }
 
             try
             {
-                var result = await _agentWorkflowService.ApproveWorkflowAsync(threadId, request, ct);
+                var authorizationHeader =
+                    Request.Headers.Authorization.ToString();
+
+                var result =
+                    await _agentWorkflowService.ApproveWorkflowAsync(
+                        threadId,
+                        request,
+                        authorizationHeader,
+                        ct);
+
                 return Ok(result);
             }
-            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            catch (HttpRequestException ex)
+                when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                return NotFound($"Workflow '{threadId}' not found.");
+                return NotFound(
+                    $"Workflow '{threadId}' not found.");
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Agent service unreachable while approving workflow {ThreadId}", threadId);
-                return StatusCode(503, "The agentic-AI service is currently unavailable.");
+                _logger.LogError(
+                    ex,
+                    "Agent service unreachable while approving workflow {ThreadId}",
+                    threadId);
+
+                return StatusCode(
+                    503,
+                    "The agentic-AI service is currently unavailable.");
             }
         }
     }
