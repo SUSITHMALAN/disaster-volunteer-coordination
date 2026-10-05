@@ -7,10 +7,13 @@ logger = logging.getLogger(__name__)
 
 API_BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:5030")
 
-SKILL_WEIGHT = 0.5
-ZONE_WEIGHT = 0.2
-AVAILABILITY_WEIGHT = 0.2
-RELIABILITY_WEIGHT = 0.1
+def get_matching_weights() -> dict[str, float]:
+    return {
+        "skill": float(os.environ.get("SKILL_WEIGHT", 0.5)),
+        "zone": float(os.environ.get("ZONE_WEIGHT", 0.2)),
+        "availability": float(os.environ.get("AVAILABILITY_WEIGHT", 0.2)),
+        "reliability": float(os.environ.get("RELIABILITY_WEIGHT", 0.1)),
+    }
 
 
 def fetch_candidates(required_skills: list[str]) -> list[dict]:
@@ -34,7 +37,15 @@ def fetch_candidates(required_skills: list[str]) -> list[dict]:
         return []
 
 
-def score_candidate(candidate: dict, required_skills: list[str], zone: str | None) -> dict:
+def score_candidate(
+    candidate: dict,
+    required_skills: list[str],
+    zone: str | None,
+    weights: dict[str, float] | None = None,
+) -> dict:
+    if weights is None:
+        weights = get_matching_weights()
+
     candidate_skills = set(candidate.get("skills") or [])
     required = set(required_skills or [])
 
@@ -44,10 +55,10 @@ def score_candidate(candidate: dict, required_skills: list[str], zone: str | Non
     reliability = 1.0  # stub — future: derive from completed match history
 
     score = (
-        skill_overlap * SKILL_WEIGHT
-        + zone_match * ZONE_WEIGHT
-        + availability * AVAILABILITY_WEIGHT
-        + reliability * RELIABILITY_WEIGHT
+        skill_overlap * weights.get("skill", 0.5)
+        + zone_match * weights.get("zone", 0.2)
+        + availability * weights.get("availability", 0.2)
+        + reliability * weights.get("reliability", 0.1)
     )
 
     return {
