@@ -204,6 +204,37 @@ class TestRunMatching(unittest.TestCase):
         self.assertEqual(len(result["matched_volunteer_ids"]), 3)
         self.assertEqual(len(result["candidate_volunteers"]), 5)
 
+    @patch("agents.matching_agent.create_match")
+    @patch("agents.matching_agent.fetch_candidates")
+    def test_preserves_match_id_for_each_volunteer(
+        self,
+        mock_fetch,
+        mock_create,
+    ):
+        volunteer = make_volunteer(
+            id="vol-1",
+            skills=["first-aid"],
+        )
+
+        mock_fetch.return_value = [volunteer]
+
+        mock_create.return_value = {
+            "id": "match-123",
+            "volunteerId": "vol-1",
+            "score": 1.0,
+        }
+
+        result = run_matching(
+            "inc-1",
+            ["first-aid"],
+            zone=None,
+        )
+
+        self.assertEqual(
+            result["match_ids_by_volunteer"]["vol-1"],
+            "match-123",
+        )
+
 class TestMatchingAgentEdgeCases(unittest.TestCase):
 
     def test_tie_breaking_preserves_candidate_order(self):

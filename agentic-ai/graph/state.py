@@ -18,6 +18,7 @@ class AgentState(TypedDict, total=False):
     candidate_volunteers: Optional[list[dict]]
     matched_volunteer_ids: Optional[list[str]]
     match_scores: Optional[dict[str, float]]
+    match_ids_by_volunteer: Optional[dict[str, str]]
 
     # --- Safety/Validation Agent output ---
     validation_verdict: Optional[

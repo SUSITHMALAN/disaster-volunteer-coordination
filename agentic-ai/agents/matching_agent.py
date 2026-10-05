@@ -137,12 +137,28 @@ def run_matching(
     matches_to_persist = scored if top_n is None else scored[:top_n]
 
     matched_ids = []
+    match_ids_by_volunteer = {}
+
     for m in matches_to_persist:
         rationale = generate_rationale(m)
-        result = create_match(incident_id, m["candidate"]["id"], m["score"], rationale)
-        matched_ids.append(result["volunteerId"])
+
+        result = create_match(
+            incident_id,
+            m["candidate"]["id"],
+            m["score"],
+            rationale,
+        )
+
+        volunteer_id = result["volunteerId"]
+        matched_ids.append(volunteer_id)
+
+        match_id = result.get("id")
+
+        if match_id:
+            match_ids_by_volunteer[volunteer_id] = match_id
 
     return {
         "candidate_volunteers": [m["candidate"] for m in scored],
         "matched_volunteer_ids": matched_ids,
+        "match_ids_by_volunteer": match_ids_by_volunteer,
     }

@@ -118,5 +118,47 @@ class CoordinatorTests(unittest.TestCase):
             run_coordinator(state)
 
 
+    def test_includes_match_id_in_assignment_when_available(self):
+        state = validated_state()
+
+        state["match_ids_by_volunteer"] = {
+            "a": "match-a",
+            "b": "match-b",
+        }
+
+        proposal = run_coordinator(state)
+
+        self.assertEqual(
+            proposal["assignments"][0]["match_id"],
+            "match-b",
+        )
+
+        self.assertEqual(
+            proposal["assignments"][1]["match_id"],
+            "match-a",
+        )
+
+    def test_preserves_estimated_duration_in_dispatch_proposal(self):
+        state = {
+            **validated_state(),
+            "estimated_duration_minutes": 90,
+        }
+
+        proposal = run_coordinator(state)
+
+        self.assertEqual(
+            proposal["estimated_duration_minutes"],
+            90,
+        )
+
+
+    def test_defaults_estimated_duration_to_120_minutes(self):
+        proposal = run_coordinator(validated_state())
+
+        self.assertEqual(
+            proposal["estimated_duration_minutes"],
+            120,
+        )
+
 if __name__ == "__main__":
     unittest.main()
