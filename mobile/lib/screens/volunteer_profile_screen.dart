@@ -88,6 +88,56 @@ class _VolunteerProfileScreenState extends State<VolunteerProfileScreen> {
     } finally {
       if (mounted) setState(() => _updating = false);
     }
+  Future<void> _removeSkill(String skill) async {
+    setState(() {
+      _skills.remove(skill);
+    });
+    await _saveSkills();
+  }
+
+  Future<void> _saveSkills() async {
+    try {
+      await VolunteerService.updateProfile(widget.user.userId, _skills, _isAvailable);
+      setState(() => _success = 'Profile skills updated successfully.');
+    } catch (_) {
+      setState(() => _error = 'Failed to update skills.');
+    }
+  }
+
+  Future<void> _showAddSkillDialog() async {
+    final controller = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: const Text('Add Skill', style: TextStyle(color: AppTheme.textPrimary)),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'e.g. medical, search-rescue, boat-driver',
+            hintStyle: TextStyle(color: AppTheme.textMuted),
+          ),
+          style: const TextStyle(color: AppTheme.textPrimary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final newSkill = controller.text.trim();
+              if (newSkill.isNotEmpty && !_skills.contains(newSkill)) {
+                setState(() => _skills.add(newSkill));
+                _saveSkills();
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -342,7 +392,7 @@ class _VolunteerProfileScreenState extends State<VolunteerProfileScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // 4. Registered Skills & Certifications
+                // 4. Registered Skills & Certifications Manager
                 Card(
                   color: AppTheme.surface,
                   child: Padding(
@@ -351,24 +401,34 @@ class _VolunteerProfileScreenState extends State<VolunteerProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Icon(Icons.workspace_premium_outlined,
-                                color: AppTheme.primary, size: 20),
-                            const SizedBox(width: 10),
-                            const Text(
-                              'Skills & Certifications',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimary,
-                              ),
+                            const Row(
+                              children: [
+                                Icon(Icons.workspace_premium_outlined,
+                                    color: AppTheme.primary, size: 20),
+                                SizedBox(width: 10),
+                                Text(
+                                  'Skills & Certifications Manager',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.add_circle_outline, color: AppTheme.primary),
+                              tooltip: 'Add Skill',
+                              onPressed: _showAddSkillDialog,
                             ),
                           ],
                         ),
                         const SizedBox(height: 14),
                         if (_skills.isEmpty)
                           const Text(
-                            'No skills listed in profile.',
+                            'No skills listed in profile. Click + to add skills.',
                             style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
                           )
                         else
@@ -376,23 +436,16 @@ class _VolunteerProfileScreenState extends State<VolunteerProfileScreen> {
                             spacing: 8,
                             runSpacing: 8,
                             children: _skills.map((skill) {
-                              return Container(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.primary.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border:
-                                      Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+                              return InputChip(
+                                label: Text(skill),
+                                labelStyle: const TextStyle(
+                                  color: AppTheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
                                 ),
-                                child: Text(
-                                  skill,
-                                  style: const TextStyle(
-                                    color: AppTheme.primary,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                  ),
-                                ),
+                                backgroundColor: AppTheme.primary.withValues(alpha: 0.15),
+                                deleteIcon: const Icon(Icons.close, size: 16, color: AppTheme.primary),
+                                onDeleted: () => _removeSkill(skill),
                               );
                             }).toList(),
                           ),
