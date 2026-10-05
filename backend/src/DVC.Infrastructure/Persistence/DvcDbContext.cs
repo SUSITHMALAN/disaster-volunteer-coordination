@@ -146,6 +146,9 @@ namespace DVC.Infrastructure.Persistence
             {
                 entity.HasKey(m => m.Id);
 
+                entity.HasIndex(m => new { m.IncidentId, m.VolunteerId })
+                    .IsUnique();
+
                 entity.Property(m => m.Status)
                     .HasConversion<string>()
                     .HasMaxLength(20);
