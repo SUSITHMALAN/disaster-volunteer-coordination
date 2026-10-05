@@ -254,4 +254,21 @@ public class AssignmentServiceTests
               volunteerId,
               result[0].VolunteerId);
       }
+
+      [Fact]
+      public async Task CreateAsync_WithInvalidDuration_ThrowsInvalidOperationException()
+      {
+          await using var db = CreateContext();
+
+          var service = new AssignmentService(db);
+
+          var request = new CreateAssignmentRequest
+          {
+              MatchId = Guid.NewGuid(),
+              EstimatedDurationMinutes = 0
+          };
+
+          await Assert.ThrowsAsync<InvalidOperationException>(
+              () => service.CreateAsync(request));
+      }
 }
