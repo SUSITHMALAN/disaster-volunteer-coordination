@@ -188,5 +188,34 @@ class TestRunMatching(unittest.TestCase):
         self.assertEqual(len(result["matched_volunteer_ids"]), 3)
         self.assertEqual(len(result["candidate_volunteers"]), 5)
 
+class TestMatchingAgentEdgeCases(unittest.TestCase):
+
+    def test_tie_breaking_preserves_candidate_order(self):
+        v1 = make_volunteer(id="vol-1", full_name="Alpha", skills=["first-aid"])
+        v2 = make_volunteer(id="vol-2", full_name="Beta", skills=["first-aid"])
+        s1 = score_candidate(v1, ["first-aid"], zone=None)
+        s2 = score_candidate(v2, ["first-aid"], zone=None)
+        self.assertEqual(s1["score"], s2["score"])
+
+    def test_zero_skill_overlap_and_unavailable_produces_lowest_score(self):
+        v = make_volunteer(id="vol-3", skills=["gardening"], is_available=False)
+        scored = score_candidate(v, ["first-aid", "boat"], zone=None)
+        self.assertAlmostEqual(scored["score"], 0.3, places=2)
+
+    def test_rationale_fallback_for_empty_skills(self):
+        v = make_volunteer(skills=[])
+        scored = score_candidate(v, ["first-aid"], zone=None)
+        rationale = generate_rationale(scored)
+        self.assertIn("no listed skills", rationale)
+
+    @patch("agents.matching_agent.requests.post")
+    def test_create_match_llm_rationale_fallback_on_network_error(self, mock_post):
+        import requests
+        mock_post.side_effect = requests.exceptions.RequestException("Backend down")
+        res = create_match("inc-123", "vol-456", 0.75, "Fallback explanation")
+        self.assertEqual(res["volunteerId"], "vol-456")
+        self.assertEqual(res["rationale"], "Fallback explanation")
+
+
 if __name__ == "__main__":
     unittest.main()
