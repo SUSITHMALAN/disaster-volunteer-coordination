@@ -24,6 +24,7 @@ namespace DVC.Domain.Entities
         // Volunteer-specific
         public List<string>? Skills { get; set; }
         public bool IsAvailable { get; set; } = true;
+        public string? LocationZone { get; set; }
 
         // Maximum number of active assignments allowed
         public int MaximumActiveAssignments { get; set; } = 1;

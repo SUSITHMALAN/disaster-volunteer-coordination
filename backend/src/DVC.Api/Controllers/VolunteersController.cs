@@ -122,6 +122,9 @@ namespace DVC.Api.Controllers
             Guid id,
             UpdateProfileRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var user = await _db.Users.FindAsync(id);
 
             if (user is null || user.Role != UserRole.Volunteer)
@@ -129,6 +132,8 @@ namespace DVC.Api.Controllers
 
             user.Skills = request.Skills;
             user.IsAvailable = request.IsAvailable;
+            if (request.LocationZone != null)
+                user.LocationZone = request.LocationZone;
 
             await _db.SaveChangesAsync();
 
