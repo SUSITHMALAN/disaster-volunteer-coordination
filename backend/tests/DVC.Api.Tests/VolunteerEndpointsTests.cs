@@ -48,7 +48,7 @@ public class VolunteerEndpointsTests
 
         var controller = new VolunteersController(db, null!);
 
-        var actionResult = await controller.GetVolunteers("first-aid", true);
+        var actionResult = await controller.GetVolunteers("first-aid",true,null);
         var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         var items = Assert.IsType<List<VolunteerListItem>>(okResult.Value);
 
