@@ -22,18 +22,25 @@ namespace DVC.Api.Controllers
             _assignmentService = assignmentService;
         }
 
-        // GET /api/volunteers?skill=first-aid&available=true
+        // GET /api/volunteers?skill=first-aid&available=true&zone=Colombo&page=1&pageSize=20
         [HttpGet]
         public async Task<ActionResult<List<VolunteerListItem>>> GetVolunteers(
             [FromQuery] string? skill,
-            [FromQuery] bool? available)
+            [FromQuery] bool? available,
+            [FromQuery] string? zone,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 20;
+            if (pageSize > 100) pageSize = 100;
+
             var query = _db.Users
+                .AsNoTracking()
                 .Where(u => u.Role == UserRole.Volunteer);
 
             if (available.HasValue)
-                query = query.Where(u =>
-                    u.IsAvailable == available.Value);
+                query = query.Where(u => u.IsAvailable == available.Value);
 
             if (!string.IsNullOrWhiteSpace(skill))
             {
@@ -42,7 +49,14 @@ namespace DVC.Api.Controllers
                     u.Skills.Contains(skill));
             }
 
+            if (!string.IsNullOrWhiteSpace(zone))
+            {
+                query = query.Where(u => u.LocationZone == zone);
+            }
+
             var volunteers = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(u => new VolunteerListItem
                 {
                     Id = u.Id,
@@ -50,6 +64,7 @@ namespace DVC.Api.Controllers
                     Email = u.Email,
                     Skills = u.Skills ?? new List<string>(),
                     IsAvailable = u.IsAvailable,
+                    LocationZone = u.LocationZone,
                     MaximumActiveAssignments = u.MaximumActiveAssignments,
 
                     ActiveAssignments = _db.Assignments.Count(a =>
