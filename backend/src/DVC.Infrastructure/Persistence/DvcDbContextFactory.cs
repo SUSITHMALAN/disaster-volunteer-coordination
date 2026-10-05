@@ -8,12 +8,13 @@ namespace DVC.Infrastructure.Persistence
         public DvcDbContext CreateDbContext(string[] args)
         {
             var connectionString =
-                Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+                Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+                ?? Environment.GetEnvironmentVariable("DEFAULT_CONNECTION");
 
             if (string.IsNullOrWhiteSpace(connectionString))
             {
                 throw new InvalidOperationException(
-                    "ConnectionStrings__DefaultConnection environment variable is not configured.");
+                    "ConnectionStrings__DefaultConnection or DEFAULT_CONNECTION environment variable is not configured.");
             }
 
             var optionsBuilder = new DbContextOptionsBuilder<DvcDbContext>();
