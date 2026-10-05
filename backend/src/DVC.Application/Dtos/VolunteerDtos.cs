@@ -11,6 +11,7 @@ namespace DVC.Application.Dtos
         public string Email { get; set; } = string.Empty;
         public List<string> Skills { get; set; } = new();
         public bool IsAvailable { get; set; }
+        public string? LocationZone { get; set; }
 
         public int MaximumActiveAssignments { get; set; }
         public int ActiveAssignments { get; set; }
