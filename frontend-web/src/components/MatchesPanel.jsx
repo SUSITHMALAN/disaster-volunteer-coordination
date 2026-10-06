@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { getMatchesForIncident, updateMatchStatus } from "../api/matches";
+
 import { createAssignment } from "../api/assignments";
 
 import "./MatchesPanel.css";
@@ -11,59 +12,123 @@ const DURATION_PRESETS = [
   { label: "2 hours", value: "120" },
 ];
 
-const CANDIDATE_VOLUNTEERS = [
+const VALIDATION_CHECKS = [
   {
-    id: "candidate-match-1",
-    volunteerName: "Dr. Thilini Senanayake",
-    score: 0.99,
-    rationale:
-      "Medical Doctor (MBBS, ATLS) matching all critical triage, trauma response, and pediatric medical needs.",
-    status: "Dispatched",
+    key: "capacity",
+    label: "Capacity Check",
   },
   {
-    id: "candidate-match-2",
-    volunteerName: "Kasun Wickramasinghe",
-    score: 0.88,
-    rationale:
-      "Certified Paramedic with emergency triage experience and active availability in the Western region.",
-    status: "Approved",
+    key: "skills",
+    label: "Required Skills",
   },
   {
-    id: "candidate-match-3",
-    volunteerName: "Nipuni Perera",
-    score: 0.78,
-    rationale:
-      "Emergency Nurse Practitioner specialized in infection control, disaster shelter medical aid, and triage support.",
-    status: "Proposed",
+    key: "severity",
+    label: "Severity / Comfort Tier",
   },
   {
-    id: "candidate-match-4",
-    volunteerName: "Chaminda Bandara",
-    score: 0.65,
-    rationale:
-      "First Aid & Logistics Volunteer with high availability window and Level 3 trauma comfort tier.",
-    status: "Proposed",
+    key: "time-window",
+    label: "Availability Window",
   },
 ];
 
 function buildRankedMatches(apiMatches) {
   const list = Array.isArray(apiMatches) ? [...apiMatches] : [];
-  const existingNames = new Set(
-    list.map((m) => (m.volunteerName || "").toLowerCase().trim()),
-  );
 
-  for (const candidate of CANDIDATE_VOLUNTEERS) {
-    if (!existingNames.has(candidate.volunteerName.toLowerCase().trim())) {
-      list.push(candidate);
-    }
-  }
-
-  // Sort descending by score
   return list.sort((a, b) => {
-    const scoreA = typeof a.score === "number" ? (a.score > 1 ? a.score / 100 : a.score) : 0;
-    const scoreB = typeof b.score === "number" ? (b.score > 1 ? b.score / 100 : b.score) : 0;
+    const scoreA =
+      typeof a.score === "number" ? (a.score > 1 ? a.score / 100 : a.score) : 0;
+
+    const scoreB =
+      typeof b.score === "number" ? (b.score > 1 ? b.score / 100 : b.score) : 0;
+
     return scoreB - scoreA;
   });
+}
+
+function getPassedValidationResult(matchId) {
+  return {
+    matchId,
+    verdict: "approved",
+    reason: "All assignment safety checks passed.",
+    checks: VALIDATION_CHECKS.map((check) => ({
+      ...check,
+      status: "passed",
+    })),
+  };
+}
+
+function getRejectedValidationResult(matchId, message) {
+  const normalizedMessage = String(message || "").toLowerCase();
+
+  let failedIndex = -1;
+
+  if (normalizedMessage.includes("capacity validation failed")) {
+    failedIndex = 0;
+  } else if (normalizedMessage.includes("skill validation failed")) {
+    failedIndex = 1;
+  } else if (normalizedMessage.includes("severity validation failed")) {
+    failedIndex = 2;
+  } else if (normalizedMessage.includes("time-window validation failed")) {
+    failedIndex = 3;
+  }
+
+  if (failedIndex === -1) {
+    return null;
+  }
+
+  return {
+    matchId,
+    verdict: "rejected",
+    reason: message,
+    checks: VALIDATION_CHECKS.map((check, index) => {
+      let status = "not-run";
+
+      if (index < failedIndex) {
+        status = "passed";
+      }
+
+      if (index === failedIndex) {
+        status = "failed";
+      }
+
+      return {
+        ...check,
+        status,
+      };
+    }),
+  };
+}
+
+function getCheckIcon(status) {
+  if (status === "passed") {
+    return "✓";
+  }
+
+  if (status === "failed") {
+    return "✕";
+  }
+
+  if (status === "running") {
+    return "…";
+  }
+
+  return "–";
+}
+
+function getCheckLabel(status) {
+  if (status === "passed") {
+    return "Passed";
+  }
+
+  if (status === "failed") {
+    return "Failed";
+  }
+
+  if (status === "running") {
+    return "Checking";
+  }
+
+  return "Not run";
 }
 
 export default function MatchesPanel({ incidentId }) {
@@ -80,6 +145,8 @@ export default function MatchesPanel({ incidentId }) {
   const [success, setSuccess] = useState("");
   const [updatingStatusId, setUpdatingStatusId] = useState(null);
 
+  const [validationResult, setValidationResult] = useState(null);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -87,6 +154,7 @@ export default function MatchesPanel({ incidentId }) {
       setLoading(true);
       setError(null);
       setSuccess("");
+      setValidationResult(null);
 
       try {
         const data = await getMatchesForIncident(incidentId);
@@ -94,9 +162,10 @@ export default function MatchesPanel({ incidentId }) {
         if (!cancelled) {
           setMatches(buildRankedMatches(data));
         }
-      } catch {
+      } catch (err) {
         if (!cancelled) {
-          setMatches(buildRankedMatches([]));
+          setMatches([]);
+          setError(err.message || "Failed to load volunteer matches.");
         }
       } finally {
         if (!cancelled) {
@@ -107,6 +176,9 @@ export default function MatchesPanel({ incidentId }) {
 
     if (incidentId) {
       load();
+    } else {
+      setMatches([]);
+      setLoading(false);
     }
 
     return () => {
@@ -118,8 +190,10 @@ export default function MatchesPanel({ incidentId }) {
     setDurationId(matchId);
     setDuration("60");
     setDurationMode("60");
+
     setError(null);
     setSuccess("");
+    setValidationResult(null);
   }
 
   function handleDurationPreset(value) {
@@ -138,25 +212,20 @@ export default function MatchesPanel({ incidentId }) {
     setUpdatingStatusId(matchId);
     setError(null);
     setSuccess("");
+    setValidationResult(null);
 
     try {
-      if (String(matchId).startsWith("candidate-")) {
-        setMatches((previous) =>
-          previous.map((m) => (m.id === matchId ? { ...m, status: newStatus } : m)),
-        );
-        setSuccess(`Volunteer match ${newStatus.toLowerCase()}.`);
-      } else {
-        const updatedMatch = await updateMatchStatus(matchId, newStatus);
-        setMatches((previous) =>
-          previous.map((match) => (match.id === matchId ? updatedMatch : match)),
-        );
-        setSuccess(`Volunteer match ${newStatus.toLowerCase()}.`);
-      }
-    } catch {
+      const updatedMatch = await updateMatchStatus(matchId, newStatus);
+
       setMatches((previous) =>
-        previous.map((m) => (m.id === matchId ? { ...m, status: newStatus } : m)),
+        previous.map((match) => (match.id === matchId ? updatedMatch : match)),
       );
+
       setSuccess(`Volunteer match ${newStatus.toLowerCase()}.`);
+    } catch (err) {
+      setError(
+        err.message || `Failed to ${newStatus.toLowerCase()} volunteer match.`,
+      );
     } finally {
       setUpdatingStatusId(null);
     }
@@ -170,6 +239,7 @@ export default function MatchesPanel({ incidentId }) {
       estimatedDurationMinutes <= 0
     ) {
       setError("Estimated duration must be a positive number of minutes.");
+
       return;
     }
 
@@ -177,34 +247,51 @@ export default function MatchesPanel({ incidentId }) {
     setError(null);
     setSuccess("");
 
+    setValidationResult({
+      matchId,
+      verdict: "running",
+      reason: "Running assignment safety checks...",
+      checks: VALIDATION_CHECKS.map((check) => ({
+        ...check,
+        status: "running",
+      })),
+    });
+
     try {
-      if (String(matchId).startsWith("candidate-")) {
-        setMatches((previous) =>
-          previous.map((m) =>
-            m.id === matchId ? { ...m, status: "Dispatched" } : m,
-          ),
-        );
-        setSuccess("Assignment created successfully. Volunteer dispatched!");
-      } else {
-        await createAssignment(matchId, estimatedDurationMinutes);
-        setMatches((previous) =>
-          previous.map((m) =>
-            m.id === matchId ? { ...m, status: "Dispatched" } : m,
-          ),
-        );
-        setSuccess("Assignment created successfully. Volunteer dispatched!");
-      }
+      await createAssignment(matchId, estimatedDurationMinutes);
+
+      setValidationResult(getPassedValidationResult(matchId));
+
+      setMatches((previous) =>
+        previous.map((match) =>
+          match.id === matchId
+            ? {
+                ...match,
+                status: "Dispatched",
+              }
+            : match,
+        ),
+      );
+
+      setSuccess(
+        "Assignment created successfully. Safety validation passed and the volunteer was dispatched.",
+      );
+
       setDurationId(null);
       setDuration("60");
       setDurationMode("60");
-    } catch {
-      setMatches((previous) =>
-        previous.map((m) =>
-          m.id === matchId ? { ...m, status: "Dispatched" } : m,
-        ),
-      );
-      setSuccess("Assignment created successfully. Volunteer dispatched!");
-      setDurationId(null);
+    } catch (err) {
+      const message = err.message || "Failed to create assignment.";
+
+      const rejectedResult = getRejectedValidationResult(matchId, message);
+
+      if (rejectedResult) {
+        setValidationResult(rejectedResult);
+      } else {
+        setValidationResult(null);
+      }
+
+      setError(message);
     } finally {
       setAssigningId(null);
     }
@@ -254,6 +341,9 @@ export default function MatchesPanel({ incidentId }) {
           match.status?.toLowerCase().replace(/\s+/g, "-") || "unknown";
 
         const isAssignmentOpen = durationId === match.id;
+
+        const matchValidation =
+          validationResult?.matchId === match.id ? validationResult : null;
 
         return (
           <div key={match.id} className="match-row">
@@ -369,14 +459,18 @@ export default function MatchesPanel({ incidentId }) {
                           disabled={assigningId === match.id}
                         >
                           {assigningId === match.id
-                            ? "Creating..."
+                            ? "Running validation..."
                             : "Confirm Assignment"}
                         </button>
 
                         <button
                           type="button"
                           className="match-row__cancel"
-                          onClick={() => setDurationId(null)}
+                          onClick={() => {
+                            setDurationId(null);
+                            setValidationResult(null);
+                            setError(null);
+                          }}
                           disabled={assigningId === match.id}
                         >
                           Cancel
@@ -391,6 +485,64 @@ export default function MatchesPanel({ incidentId }) {
                     >
                       Create Assignment
                     </button>
+                  )}
+                </div>
+              )}
+
+              {matchValidation && (
+                <div
+                  className={`match-row__validation-result match-row__validation-result--${matchValidation.verdict}`}
+                >
+                  <div className="match-row__validation-header">
+                    <div>
+                      <span className="match-row__validation-eyebrow">
+                        SAFETY VALIDATION
+                      </span>
+
+                      <strong>Safety Validation Gate</strong>
+                    </div>
+
+                    <span
+                      className={`match-row__validation-verdict match-row__validation-verdict--${matchValidation.verdict}`}
+                    >
+                      {matchValidation.verdict === "approved"
+                        ? "APPROVED"
+                        : matchValidation.verdict === "rejected"
+                          ? "REJECTED"
+                          : "CHECKING"}
+                    </span>
+                  </div>
+
+                  <div className="match-row__validation-checks">
+                    {matchValidation.checks.map((check) => (
+                      <div
+                        key={check.key}
+                        className={`match-row__validation-check match-row__validation-check--${check.status}`}
+                      >
+                        <span className="match-row__validation-icon">
+                          {getCheckIcon(check.status)}
+                        </span>
+
+                        <span className="match-row__validation-label">
+                          {check.label}
+                        </span>
+
+                        <span className="match-row__validation-state">
+                          {getCheckLabel(check.status)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {matchValidation.reason && (
+                    <p className="match-row__validation-reason">
+                      <strong>
+                        {matchValidation.verdict === "rejected"
+                          ? "Reason:"
+                          : "Result:"}
+                      </strong>{" "}
+                      {matchValidation.reason}
+                    </p>
                   )}
                 </div>
               )}
