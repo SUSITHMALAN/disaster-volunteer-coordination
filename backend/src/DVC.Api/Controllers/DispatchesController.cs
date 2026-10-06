@@ -1,11 +1,13 @@
 using DVC.Application.Dtos;
 using DVC.Application.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DVC.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class DispatchesController : ControllerBase
     {
         private readonly IDispatchService _dispatchService;
@@ -17,6 +19,7 @@ namespace DVC.Api.Controllers
         }
 
         // POST /api/dispatches
+        [Authorize(Roles = "Coordinator,Admin")]
         [HttpPost]
         public async Task<ActionResult<DispatchResponse>> CreateDispatch(
             CreateDispatchRequest request)

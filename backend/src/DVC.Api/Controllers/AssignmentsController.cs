@@ -2,11 +2,13 @@
 using DVC.Application.Dtos;
 using DVC.Application.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DVC.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class AssignmentsController : ControllerBase
     {
         private readonly IAssignmentService _assignmentService;
@@ -18,6 +20,7 @@ namespace DVC.Api.Controllers
         }
 
         // POST /api/assignments
+        [Authorize(Roles = "Coordinator,Admin")]
         [HttpPost]
         public async Task<ActionResult<AssignmentResponse>> CreateAssignment(
             CreateAssignmentRequest request)
@@ -47,6 +50,7 @@ namespace DVC.Api.Controllers
         }
 
         // PATCH /api/assignments/{id}/status
+        [Authorize(Roles = "Volunteer,Coordinator,Admin")]
         [HttpPatch("{id}/status")]
         public async Task<ActionResult<AssignmentResponse>> UpdateStatus(
             Guid id,
