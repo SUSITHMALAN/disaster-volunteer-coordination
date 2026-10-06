@@ -24,7 +24,7 @@ namespace DVC.Domain.Entities
     public enum IncidentStatus
     {
         Reported,       // just came in, not triaged
-        Triaged,        // agent has classified it
+        Triaged,        // agent has classified 
         Matching,       // looking for volunteers
         Assigned,       // volunteer(s) assigned, pending dispatch
         InProgress,     // dispatched and being worked
