@@ -84,6 +84,63 @@
   gap: 16px;
 }
 
+/* ── Skill Selector ── */
+.incident-form__skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.incident-form__skill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+
+  padding: 0.55rem 0.8rem;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.incident-form__skill:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-primary);
+  color: var(--color-text);
+  transform: translateY(-1px);
+}
+
+.incident-form__skill--selected {
+  background: rgba(249, 115, 22, 0.14);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.08);
+}
+
+.incident-form__skill--selected:hover {
+  background: rgba(249, 115, 22, 0.18);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ── Error Message ── */
 .incident-form__error {
   color: var(--color-danger);
   font-size: 13px;
@@ -94,13 +151,14 @@
   margin: 4px 0 18px;
 }
 
+/* ── Submit Button ── */
 .incident-form__submit {
   margin-top: 8px;
   padding: 14px;
   border: none;
   border-radius: var(--radius-md);
   background: var(--gradient-btn-primary);
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -118,12 +176,7 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 560px) {
-  .incident-form__row {
-    grid-template-columns: 1fr;
-  }
-}
-
+/* ── Existing Incident Card Action State ── */
 .i-card__action:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -132,4 +185,25 @@
 
 .i-card__action:disabled:hover {
   transform: none;
+}
+
+/* ── Responsive ── */
+@media (max-width: 560px) {
+  .incident-form {
+    padding: 32px 22px;
+  }
+
+  .incident-form__row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .incident-form__skills {
+    gap: 0.5rem;
+  }
+
+  .incident-form__skill {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.7rem;
+  }
 }

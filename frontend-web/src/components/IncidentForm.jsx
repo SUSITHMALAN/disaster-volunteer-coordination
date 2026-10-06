@@ -14,6 +14,30 @@ const CATEGORIES = [
 
 const SEVERITIES = ["Low", "Medium", "High", "Critical"];
 
+const AVAILABLE_SKILLS = [
+  "first-aid",
+  "cpr",
+  "boat-operation",
+  "search-and-rescue",
+  "heavy-lifting",
+  "driving",
+  "medical",
+  "electrical-repair",
+  "food-prep",
+  "triage",
+  "logistics",
+  "generator-handling",
+  "swimming",
+  "child-care",
+];
+
+function formatSkill(skill) {
+  return skill
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 export default function IncidentForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -22,7 +46,7 @@ export default function IncidentForm() {
   const [severity, setSeverity] = useState("Medium");
   const [zone, setZone] = useState("");
   const [address, setAddress] = useState("");
-  const [skillsInput, setSkillsInput] = useState("");
+  const [selectedSkills, setSelectedSkills] = useState([]);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -38,6 +62,14 @@ export default function IncidentForm() {
     }
   }
 
+  function toggleSkill(skill) {
+    setSelectedSkills((currentSkills) =>
+      currentSkills.includes(skill)
+        ? currentSkills.filter((item) => item !== skill)
+        : [...currentSkills, skill],
+    );
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
@@ -48,11 +80,6 @@ export default function IncidentForm() {
     }
 
     setSubmitting(true);
-
-    const requiredSkills = skillsInput
-      .split(",")
-      .map((skill) => skill.trim())
-      .filter(Boolean);
 
     const rawReportText =
       category === "Other"
@@ -67,7 +94,7 @@ export default function IncidentForm() {
         severity,
         zone: zone || undefined,
         address: address || undefined,
-        requiredSkills,
+        requiredSkills: selectedSkills,
         rawReportText,
       });
 
@@ -171,15 +198,30 @@ export default function IncidentForm() {
         </label>
       </div>
 
-      <label className="incident-form__label">
-        Skills needed
-        <input
-          type="text"
-          value={skillsInput}
-          onChange={(e) => setSkillsInput(e.target.value)}
-          placeholder="Comma-separated, e.g. boat, first-aid"
-        />
-      </label>
+      <div className="incident-form__label">
+        <span>Skills needed</span>
+
+        <div className="incident-form__skills">
+          {AVAILABLE_SKILLS.map((skill) => {
+            const selected = selectedSkills.includes(skill);
+
+            return (
+              <button
+                key={skill}
+                type="button"
+                className={`incident-form__skill ${
+                  selected ? "incident-form__skill--selected" : ""
+                }`}
+                onClick={() => toggleSkill(skill)}
+                aria-pressed={selected}
+              >
+                {selected ? "✓ " : ""}
+                {formatSkill(skill)}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {error && <p className="incident-form__error">{error}</p>}
 
