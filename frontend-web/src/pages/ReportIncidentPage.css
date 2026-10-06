@@ -6,3 +6,25 @@
   padding: 48px 20px 80px;
   animation: fadeInUp 0.5s var(--ease-out) both;
 }
+
+/* Report incident dropdowns */
+.report-incident-page select {
+  background-color: var(--color-surface-solid);
+  color: var(--color-text);
+  color-scheme: dark;
+}
+
+.report-incident-page select option {
+  background-color: #151e32;
+  color: #f8fafc;
+}
+
+/* Light theme */
+:root[data-theme="light"] .report-incident-page select {
+  color-scheme: light;
+}
+
+:root[data-theme="light"] .report-incident-page select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
