@@ -18,23 +18,46 @@ export default function IncidentForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Other");
+  const [customCategory, setCustomCategory] = useState("");
   const [severity, setSeverity] = useState("Medium");
   const [zone, setZone] = useState("");
   const [address, setAddress] = useState("");
   const [skillsInput, setSkillsInput] = useState("");
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+
   const navigate = useNavigate();
+
+  function handleCategoryChange(e) {
+    const selectedCategory = e.target.value;
+
+    setCategory(selectedCategory);
+
+    if (selectedCategory !== "Other") {
+      setCustomCategory("");
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
+
+    if (category === "Other" && !customCategory.trim()) {
+      setError("Please specify the incident category.");
+      return;
+    }
+
     setSubmitting(true);
 
     const requiredSkills = skillsInput
       .split(",")
-      .map((s) => s.trim())
+      .map((skill) => skill.trim())
       .filter(Boolean);
+
+    const rawReportText =
+      category === "Other"
+        ? `Custom category: ${customCategory.trim()}\n\n${description}`
+        : description;
 
     try {
       await createIncident({
@@ -45,8 +68,9 @@ export default function IncidentForm() {
         zone: zone || undefined,
         address: address || undefined,
         requiredSkills,
-        rawReportText: description,
+        rawReportText,
       });
+
       navigate("/incidents");
     } catch (err) {
       setError(err.message || "Couldn't submit the report. Please try again.");
@@ -58,6 +82,7 @@ export default function IncidentForm() {
   return (
     <form className="incident-form" onSubmit={handleSubmit}>
       <h1 className="incident-form__title">Report an incident</h1>
+
       <p className="incident-form__subtitle">
         Tell us what's happening — a coordinator will triage it shortly.
       </p>
@@ -87,22 +112,42 @@ export default function IncidentForm() {
       <div className="incident-form__row">
         <label className="incident-form__label">
           Category
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
+          <select value={category} onChange={handleCategoryChange}>
+            {CATEGORIES.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
             ))}
           </select>
         </label>
 
         <label className="incident-form__label">
           Severity
-          <select value={severity} onChange={(e) => setSeverity(e.target.value)}>
-            {SEVERITIES.map((s) => (
-              <option key={s} value={s}>{s}</option>
+          <select
+            value={severity}
+            onChange={(e) => setSeverity(e.target.value)}
+          >
+            {SEVERITIES.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
             ))}
           </select>
         </label>
       </div>
+
+      {category === "Other" && (
+        <label className="incident-form__label">
+          Specify category
+          <input
+            type="text"
+            value={customCategory}
+            onChange={(e) => setCustomCategory(e.target.value)}
+            placeholder="e.g. Road blockage, animal rescue"
+            required
+          />
+        </label>
+      )}
 
       <div className="incident-form__row">
         <label className="incident-form__label">
@@ -138,7 +183,11 @@ export default function IncidentForm() {
 
       {error && <p className="incident-form__error">{error}</p>}
 
-      <button className="incident-form__submit" type="submit" disabled={submitting}>
+      <button
+        className="incident-form__submit"
+        type="submit"
+        disabled={submitting}
+      >
         {submitting ? "Submitting…" : "Submit report"}
       </button>
     </form>
