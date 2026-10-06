@@ -48,6 +48,7 @@ export default function IncidentForm() {
   const [address, setAddress] = useState("");
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const navigate = useNavigate();
@@ -72,7 +73,9 @@ export default function IncidentForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+
     setError(null);
+    setSuccess("");
 
     if (category === "Other" && !customCategory.trim()) {
       setError("Please specify the incident category.");
@@ -98,7 +101,11 @@ export default function IncidentForm() {
         rawReportText,
       });
 
-      navigate("/incidents");
+      setSuccess("Incident report submitted successfully.");
+
+      setTimeout(() => {
+        navigate("/incidents");
+      }, 1500);
     } catch (err) {
       setError(err.message || "Couldn't submit the report. Please try again.");
     } finally {
@@ -223,14 +230,20 @@ export default function IncidentForm() {
         </div>
       </div>
 
+      {success && <p className="incident-form__success">✓ {success}</p>}
+
       {error && <p className="incident-form__error">{error}</p>}
 
       <button
         className="incident-form__submit"
         type="submit"
-        disabled={submitting}
+        disabled={submitting || !!success}
       >
-        {submitting ? "Submitting…" : "Submit report"}
+        {success
+          ? "Report submitted"
+          : submitting
+            ? "Submitting…"
+            : "Submit report"}
       </button>
     </form>
   );
