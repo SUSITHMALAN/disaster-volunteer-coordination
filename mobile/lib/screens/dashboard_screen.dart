@@ -305,54 +305,58 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: _buildAppBar(),
-      body: RefreshIndicator(
-        onRefresh: _showIncidentMap ? _loadIncidents : () async {},
-        color: AppTheme.primary,
-        backgroundColor: AppTheme.surface,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
-          children: [
-            _buildWelcomeSection(),
-            const SizedBox(height: 28),
+      body: SafeArea(
+        top: false,
+        child: RefreshIndicator(
+          onRefresh: _showIncidentMap ? _loadIncidents : () async {},
+          color: AppTheme.primary,
+          backgroundColor: AppTheme.surface,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+            children: [
+              _buildWelcomeSection(),
 
-            const Text(
-              'QUICK ACTIONS',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.1,
-                color: AppTheme.textMuted,
+              const SizedBox(height: 28),
+
+              const Text(
+                'QUICK ACTIONS',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.1,
+                  color: AppTheme.textMuted,
+                ),
               ),
-            ),
 
-            const SizedBox(height: 14),
+              const SizedBox(height: 14),
 
-            _buildQuickActions(),
+              _buildQuickActions(),
 
-            if (_showIncidentMap) ...[
-              const SizedBox(height: 30),
-              _buildIncidentMapSection(),
+              if (_showIncidentMap) ...[
+                const SizedBox(height: 30),
+                _buildIncidentMapSection(),
+              ],
+
+              const SizedBox(height: 28),
+
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.danger,
+                  side: const BorderSide(color: AppTheme.danger),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                onPressed: _confirmLogout,
+                icon: const Icon(Icons.logout_rounded),
+                label: const Text('Sign Out'),
+              ),
             ],
-
-            const SizedBox(height: 28),
-
-            OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppTheme.danger,
-                side: const BorderSide(color: AppTheme.danger),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              onPressed: _confirmLogout,
-              icon: const Icon(Icons.logout_rounded),
-              label: const Text('Sign Out'),
-            ),
-          ],
+          ),
         ),
       ),
     );
