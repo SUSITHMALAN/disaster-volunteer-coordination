@@ -1,5 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5030";
-
+#frontendChanges
 function getToken() {
   return localStorage.getItem("dvc_token");
 }
